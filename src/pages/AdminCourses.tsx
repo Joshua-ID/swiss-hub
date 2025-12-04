@@ -1,0 +1,185 @@
+import React, { useState } from "react";
+import { Plus, Edit, Trash2, Search } from "lucide-react";
+import { useStore } from "../store/useStore";
+import Modal from "../components/Modal";
+import type { Course } from "@/types";
+import CourseForm from "./CourseForm";
+
+const AdminCourses: React.FC = () => {
+  const { courses, deleteCourse, getLessonsByCourse } = useStore();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+
+  const filteredCourses = courses.filter(
+    (course) =>
+      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleAddCourse = () => {
+    setEditingCourse(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditCourse = (course: Course) => {
+    setEditingCourse(course);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteCourse = (courseId: string) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this course? This action cannot be undone."
+      )
+    ) {
+      deleteCourse(courseId);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingCourse(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Course Management
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Create and manage course content
+            </p>
+          </div>
+          <button
+            onClick={handleAddCourse}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-md"
+          >
+            <Plus className="w-5 h-5" />
+            Add New Course
+          </button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search courses by title or category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        {/* Courses Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredCourses.map((course) => {
+            const lessonCount = getLessonsByCourse(course.id).length;
+            return (
+              <div
+                key={course.id}
+                className="bg-white rounded-xl shadow-md overflow-hidden"
+              >
+                {/* Thumbnail */}
+                <div className="relative h-48 bg-linear-to-br from-blue-500 to-purple-600">
+                  {course.thumbnail && (
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  )}
+                  <div className="absolute top-4 right-4 flex gap-2">
+                    <button
+                      onClick={() => handleEditCourse(course)}
+                      className="bg-white hover:bg-gray-100 p-2 rounded-lg shadow-md transition-colors"
+                      title="Edit Course"
+                    >
+                      <Edit className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCourse(course.id)}
+                      className="bg-white hover:bg-red-50 p-2 rounded-lg shadow-md transition-colors"
+                      title="Delete Course"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm text-gray-500">
+                      {course.category}
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        course.level === "beginner"
+                          ? "bg-green-100 text-green-800"
+                          : course.level === "intermediate"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {course.level}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {course.description}
+                  </p>
+
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>{course.duration}h duration</span>
+                    <span>
+                      {lessonCount} lesson{lessonCount !== 1 ? "s" : ""}
+                    </span>
+                    <span>
+                      {course.prerequisites.length} prerequisite
+                      {course.prerequisites.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {filteredCourses.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No courses found</p>
+            <p className="text-gray-400 text-sm mt-2">
+              Try adjusting your search or add a new course
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Course Form Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={editingCourse ? "Edit Course" : "Create New Course"}
+        size="lg"
+      >
+        <CourseForm course={editingCourse} onClose={handleCloseModal} />
+      </Modal>
+    </div>
+  );
+};
+
+export default AdminCourses;
