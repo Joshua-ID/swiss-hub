@@ -82,7 +82,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose }) => {
           value={formData.title}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF]/75 focus:border-transparent"
           placeholder="e.g., Introduction to Web Development"
         />
       </div>
@@ -102,7 +102,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose }) => {
           onChange={handleChange}
           required
           rows={4}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF]/75 focus:border-transparent"
           placeholder="Describe what students will learn in this course..."
         />
       </div>
@@ -121,7 +121,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose }) => {
           name="thumbnail"
           value={formData.thumbnail}
           onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF]/75 focus:border-transparent"
           placeholder="https://example.com/image.jpg"
         />
       </div>
@@ -142,7 +142,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose }) => {
             value={formData.category}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF]/75 focus:border-transparent"
             placeholder="e.g., Web Development"
           />
         </div>
@@ -160,7 +160,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose }) => {
             value={formData.level}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF]/75 focus:border-transparent"
           >
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
@@ -185,7 +185,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose }) => {
           onChange={handleChange}
           required
           min="1"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF]/75 focus:border-transparent"
           placeholder="e.g., 20"
         />
       </div>
@@ -210,7 +210,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose }) => {
                   onChange={() =>
                     handlePrerequisiteToggle(prerequisiteCourse.id)
                   }
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-[#243E36FF] border-gray-300 rounded focus:ring-[#243E36FF]/75"
                 />
                 <span className="text-sm text-gray-700">
                   {prerequisiteCourse.title}
@@ -232,7 +232,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose }) => {
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          className="px-6 py-2 bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white rounded-lg transition-colors"
         >
           {course ? "Update Course" : "Create Course"}
         </button>
