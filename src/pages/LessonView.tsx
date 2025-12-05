@@ -8,9 +8,9 @@ import {
   FileText,
 } from "lucide-react";
 import { useStore } from "../store/useStore";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
-const LessonView: React.FC = () => {
+export const LessonView = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const navigate = useNavigate();
   const {
@@ -52,19 +52,15 @@ const LessonView: React.FC = () => {
 
   if (!lesson || !course) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Lesson not found
-            </h2>
-            <button
-              onClick={() => navigate("/catalog")}
-              className="mt-4 text-blue-600 hover:text-blue-700"
-            >
-              ← Back to Catalog
-            </button>
-          </div>
+      <div>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900">Lesson not found</h2>
+          <button
+            onClick={() => navigate("/catalog")}
+            className="mt-4 text-blue-600 hover:text-blue-700"
+          >
+            ← Back to Catalog
+          </button>
         </div>
       </div>
     );
@@ -88,38 +84,36 @@ const LessonView: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate(`/course/${lesson.courseId}`)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-medium">Back to Course</span>
-            </button>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate(`/course/${lesson.courseId}`)}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-medium">Back to Course</span>
+          </button>
 
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">
-                Lesson {lesson.order} of {courseLessons.length}
-              </span>
-              <button
-                onClick={handleToggleComplete}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isCompleted
-                    ? "bg-green-100 text-green-700 hover:bg-green-200"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
-              >
-                <CheckCircle className="w-4 h-4" />
-                {isCompleted ? "Completed" : "Mark Complete"}
-              </button>
-            </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500">
+              Lesson {lesson.order} of {courseLessons.length}
+            </span>
+            <button
+              onClick={handleToggleComplete}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                isCompleted
+                  ? "bg-green-100 text-green-700 hover:bg-green-200"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
+            >
+              <CheckCircle className="w-4 h-4" />
+              {isCompleted ? "Completed" : "Mark Complete"}
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Video and Content */}
           <div className="lg:col-span-2 space-y-6">
@@ -285,5 +279,3 @@ const LessonView: React.FC = () => {
     </div>
   );
 };
-
-export default LessonView;

@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { useStore } from "../store/useStore";
 import Modal from "../components/Modal";
 import type { Course } from "@/types";
 import CourseForm from "./CourseForm";
 
-const AdminCourses: React.FC = () => {
+export const AdminCourses = () => {
   const { courses, deleteCourse, getLessonsByCourse } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,8 +43,8 @@ const AdminCourses: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <div>
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
@@ -79,7 +79,7 @@ const AdminCourses: React.FC = () => {
         </div>
 
         {/* Courses Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {filteredCourses.map((course) => {
             const lessonCount = getLessonsByCourse(course.id).length;
             return (
@@ -178,8 +178,6 @@ const AdminCourses: React.FC = () => {
       >
         <CourseForm course={editingCourse} onClose={handleCloseModal} />
       </Modal>
-    </div>
+    </>
   );
 };
-
-export default AdminCourses;

@@ -6,14 +6,14 @@ import {
 } from "react-router-dom";
 import { useStore } from "./store/useStore";
 
-import AdminCourses from "./pages/AdminCourses";
-import Navbar from "./components/Navbar";
-import Home from "./pages/Home";
-import AdminDashboard from "./pages/AdminDashboard";
-import StudentDashboard from "./pages/StudentDashboard";
-import CourseCatalog from "./pages/CourseCatalog";
-import CourseDetail from "./pages/CourseDetail";
-import LessonView from "./pages/LessonView";
+import { AdminCourses } from "./pages/AdminCourses";
+import { Navbar } from "./components/Navbar";
+import { AdminDashboard } from "./pages/AdminDashboard";
+import { StudentDashboard } from "./pages/StudentDashboard";
+import { CourseCatalog } from "./pages/CourseCatalog";
+import { CourseDetail } from "./pages/CourseDetail";
+import { LessonView } from "./pages/LessonView";
+import { Home } from "./pages/Home";
 
 function App() {
   const { currentUser } = useStore();
@@ -21,7 +21,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen w-full ">
         <Navbar />
         <Routes>
           {/* Public Routes */}
