@@ -57,7 +57,7 @@ export const AdminCourses = () => {
           </div>
           <button
             onClick={handleAddCourse}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-md"
+            className="flex items-center gap-2 bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-md"
           >
             <Plus className="w-5 h-5" />
             Add New Course
@@ -73,7 +73,7 @@ export const AdminCourses = () => {
               placeholder="Search courses by title or category..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF]/75 focus:border-transparent"
             />
           </div>
         </div>
@@ -88,7 +88,7 @@ export const AdminCourses = () => {
                 className="bg-white rounded-xl shadow-md overflow-hidden"
               >
                 {/* Thumbnail */}
-                <div className="relative h-48 bg-linear-to-br from-blue-500 to-purple-600">
+                <div className="relative h-48 bg-linear-to-br from-[#243E36FF]/75 to-[#47126b]/85">
                   {course.thumbnail && (
                     <img
                       src={course.thumbnail}

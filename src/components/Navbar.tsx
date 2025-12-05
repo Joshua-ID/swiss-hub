@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Layout, GraduationCap } from "lucide-react";
+import { BookOpen, Layout } from "lucide-react";
 import { useStore } from "../store/useStore";
 
 export const Navbar = () => {
@@ -16,23 +16,28 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-40">
+    <nav className="bg-white shadow-md sticky top-0 z-40 px-3 md:px-5">
       <div className="flex justify-between items-center h-16">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <GraduationCap className="w-8 h-8 text-blue-600" />
-          <span className="text-xl font-bold text-gray-900">Swiss-Hub</span>
+        <Link to="/" className="flex items-center gap-2 flex-wrap">
+          <img src="/logo.png" alt="Swiss-Hub" className="w-10 h-10" />
+          <span
+            className="text-2xl  text-[#243E36FF] font-extrabold white-space-nowrap"
+            style={{ fontFamily: "var(--font-design)" }}
+          >
+            Swiss-Hub
+          </span>
         </Link>
 
-        {/* Navigation Links */}
         <div className="flex items-center gap-6">
-          {isAdmin ? (
+          {/* admin  */}
+          {isAdmin && (
             <>
               <Link
                 to="/admin"
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                   isActive("/admin")
-                    ? "bg-blue-50 text-blue-600"
+                    ? "bg-[#243E36FF]/25 text-[#243E36FF]"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
@@ -43,7 +48,7 @@ export const Navbar = () => {
                 to="/admin/courses"
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                   isActive("/admin/courses")
-                    ? "bg-blue-50 text-blue-600"
+                    ? "bg-[#243E36FF]/25 text-[#243E36FF]"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
@@ -51,13 +56,15 @@ export const Navbar = () => {
                 <span className="font-medium">Courses</span>
               </Link>
             </>
-          ) : (
+          )}
+          {/* student */}
+          {!isAdmin && (
             <>
               <Link
                 to="/dashboard"
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                   isActive("/dashboard")
-                    ? "bg-blue-50 text-blue-600"
+                    ? "bg-[#243E36FF]/25 text-[#243E36FF]"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
@@ -68,7 +75,7 @@ export const Navbar = () => {
                 to="/catalog"
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                   isActive("/catalog")
-                    ? "bg-blue-50 text-blue-600"
+                    ? "bg-[#243E36FF]/25 text-[#243E36FF]"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
@@ -78,22 +85,26 @@ export const Navbar = () => {
             </>
           )}
 
-          {/* User Info & Role Switcher */}
-          <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">
-                {currentUser?.name}
-              </p>
-              <p className="text-xs text-gray-500 capitalize">
-                {currentUser?.role}
-              </p>
+          {/* Navigation Links */}
+          <div className="flex items-center gap-6">
+            {/* User Info & Role Switcher */}
+            <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">
+                  {currentUser?.name}
+                </p>
+              </div>
+              {currentUser ? (
+                <button
+                  onClick={switchRole}
+                  className="bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white text-xs p-3 rounded-full transition-colors"
+                >
+                  Logout
+                </button>
+              ) : (
+                <button>Sign Up</button>
+              )}
             </div>
-            <button
-              onClick={switchRole}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-full transition-colors"
-            >
-              Switch to {isAdmin ? "Student" : "Admin"}
-            </button>
           </div>
         </div>
       </div>

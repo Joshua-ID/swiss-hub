@@ -38,7 +38,7 @@ export const CourseDetail = () => {
           <h2 className="text-2xl font-bold text-gray-900">Course not found</h2>
           <button
             onClick={() => navigate("/catalog")}
-            className="mt-4 text-blue-600 hover:text-blue-700"
+            className="mt-4 text-[#243E36FF] hover:text-[#243E36FF]/85"
           >
             ← Back to Catalog
           </button>
@@ -95,7 +95,7 @@ export const CourseDetail = () => {
 
       {/* Course Header */}
       <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-        <div className="relative h-64 bg-linear-to-br from-blue-500 to-purple-600">
+        <div className="relative h-64 bg-linear-to-br from-[#243E36FF]/75 to-[#47126b]/85">
           {course.thumbnail && (
             <img
               src={course.thumbnail}
@@ -152,7 +152,7 @@ export const CourseDetail = () => {
           {!enrolled && (
             <button
               onClick={handleEnroll}
-              className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+              className="w-full md:w-auto bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
             >
               Enroll in Course
             </button>
@@ -185,7 +185,7 @@ export const CourseDetail = () => {
                   className={`border border-gray-200 rounded-lg p-5 transition-all ${
                     isLocked
                       ? "bg-gray-50 cursor-not-allowed opacity-60"
-                      : "hover:border-blue-300 hover:shadow-md cursor-pointer"
+                      : "hover:border-[#243E36FF]/60 hover:shadow-md cursor-pointer"
                   }`}
                 >
                   <div className="flex items-start gap-4">
@@ -196,7 +196,7 @@ export const CourseDetail = () => {
                           ? "bg-green-100"
                           : isLocked
                           ? "bg-gray-200"
-                          : "bg-blue-100"
+                          : "bg-[#243E36FF]/50"
                       }`}
                     >
                       {isCompleted ? (
@@ -204,7 +204,7 @@ export const CourseDetail = () => {
                       ) : isLocked ? (
                         <Lock className="w-5 h-5 text-gray-400" />
                       ) : (
-                        <span className="font-semibold text-blue-600">
+                        <span className="font-semibold text-[#243E36FF]">
                           {lesson.order}
                         </span>
                       )}
@@ -245,9 +245,9 @@ export const CourseDetail = () => {
                             <span
                               className={`px-2 py-1 rounded text-xs font-medium ${
                                 lesson.type === "video"
-                                  ? "bg-purple-100 text-purple-700"
+                                  ? "bg-[#47126b]/50 text-[#47126b]"
                                   : lesson.type === "reading"
-                                  ? "bg-blue-100 text-blue-700"
+                                  ? "bg-[#243E36FF]/50 text-[#243E36FF]/85"
                                   : "bg-orange-100 text-orange-700"
                               }`}
                             >

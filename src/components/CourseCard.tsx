@@ -34,7 +34,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
       onClick={() => !isLocked && onClick && onClick()}
     >
       {/* Thumbnail */}
-      <div className="relative h-48 bg-linear-to-br from-blue-500 to-purple-600 overflow-hidden">
+      <div className="relative h-48 bg-linear-to-br from-[#243E36FF]/75 to-[#47126b]/85 overflow-hidden">
         {course.thumbnail && (
           <img
             src={course.thumbnail}
@@ -118,7 +118,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
               e.stopPropagation();
               onEnroll();
             }}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+            className="w-full bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
           >
             Enroll Now
           </button>
