@@ -14,6 +14,7 @@ import { CourseCatalog } from "./pages/CourseCatalog";
 import { CourseDetail } from "./pages/CourseDetail";
 import { LessonView } from "./pages/LessonView";
 import { Home } from "./pages/Home";
+import Footer from "./components/Footer";
 
 function App() {
   const { currentUser } = useStore();
@@ -61,6 +62,7 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Footer />
       </div>
     </Router>
   );
