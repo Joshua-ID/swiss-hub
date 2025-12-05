@@ -33,8 +33,8 @@ export const AdminDashboard = () => {
                 {stats.totalCourses}
               </p>
             </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <BookOpen className="w-8 h-8 text-blue-600" />
+            <div className="bg-[#243E36FF]/50 p-3 rounded-lg">
+              <BookOpen className="w-8 h-8 text-[#243E36FF]" />
             </div>
           </div>
         </div>
@@ -65,8 +65,8 @@ export const AdminDashboard = () => {
                 {stats.totalEnrollments}
               </p>
             </div>
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <TrendingUp className="w-8 h-8 text-purple-600" />
+            <div className="bg-[#47126b]/50 p-3 rounded-lg">
+              <TrendingUp className="w-8 h-8 text-[#47126b]/85" />
             </div>
           </div>
         </div>
@@ -92,7 +92,7 @@ export const AdminDashboard = () => {
           <h2 className="text-xl font-bold text-gray-900">Recent Courses</h2>
           <Link
             to="/admin/courses"
-            className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+            className="text-[#243E36FF] hover:text-[#243E36FF]/85 font-medium text-sm"
           >
             View All →
           </Link>

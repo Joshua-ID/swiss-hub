@@ -57,7 +57,7 @@ export const LessonView = () => {
           <h2 className="text-2xl font-bold text-gray-900">Lesson not found</h2>
           <button
             onClick={() => navigate("/catalog")}
-            className="mt-4 text-blue-600 hover:text-blue-700"
+            className="mt-4 text-[#243E36FF] hover:text-[#243E36FF]/85"
           >
             ← Back to Catalog
           </button>
@@ -102,7 +102,7 @@ export const LessonView = () => {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 isCompleted
                   ? "bg-green-100 text-green-700 hover:bg-green-200"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-[#243E36FF] text-white hover:bg-[#243E36FF]/85"
               }`}
             >
               <CheckCircle className="w-4 h-4" />
@@ -118,11 +118,11 @@ export const LessonView = () => {
           {/* Left Column - Video and Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Course Context */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h2 className="text-sm font-semibold text-blue-900 mb-1">
+            <div className="bg-[#243E36FF]/25 border border-[#243E36FF]/60 rounded-lg p-4">
+              <h2 className="text-sm font-semibold text-[#243E36FF]/95 mb-1">
                 {course.title}
               </h2>
-              <p className="text-xs text-blue-700">{course.category}</p>
+              <p className="text-xs text-[#243E36FF]/85">{course.category}</p>
             </div>
 
             {/* Video Player */}
@@ -161,9 +161,9 @@ export const LessonView = () => {
                 <span
                   className={`px-2 py-1 rounded text-xs font-medium ${
                     lesson.type === "video"
-                      ? "bg-purple-100 text-purple-700"
+                      ? "bg-[#47126b]/50 text-[#47126b]"
                       : lesson.type === "reading"
-                      ? "bg-blue-100 text-blue-700"
+                      ? "bg-[#243E36FF]/50 text-[#243E36FF]/85"
                       : "bg-orange-100 text-orange-700"
                   }`}
                 >
@@ -194,7 +194,7 @@ export const LessonView = () => {
                 disabled={!nextLesson}
                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
                   nextLesson
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    ? "bg-[#243E36FF] text-white hover:bg-[#243E36FF]/85"
                     : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 }`}
               >
@@ -224,15 +224,15 @@ export const LessonView = () => {
                       href={material.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors group"
+                      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-[#243E36FF]/60 hover:bg-[#243E36FF]/25 transition-colors group"
                     >
-                      <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                      <div className="flex-shrink-0 w-10 h-10 bg-[#243E36FF]/50 rounded-lg flex items-center justify-center group-hover:bg-[#243E36FF]/60 transition-colors">
                         {material.type === "pdf" ||
                         material.type === "document" ||
                         material.type === "slide" ? (
-                          <FileText className="w-5 h-5 text-blue-600" />
+                          <FileText className="w-5 h-5 text-[#243E36FF]" />
                         ) : (
-                          <Download className="w-5 h-5 text-blue-600" />
+                          <Download className="w-5 h-5 text-[#243E36FF]" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -244,7 +244,7 @@ export const LessonView = () => {
                           {material.size && ` • ${material.size}`}
                         </p>
                       </div>
-                      <Download className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                      <Download className="w-4 h-4 text-gray-400 group-hover:text-[#243E36FF] transition-colors" />
                     </a>
                   ))}
                 </div>

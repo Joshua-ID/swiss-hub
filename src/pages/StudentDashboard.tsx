@@ -71,8 +71,8 @@ export const StudentDashboard = () => {
                 {stats.enrolled}
               </p>
             </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <BookOpen className="w-8 h-8 text-blue-600" />
+            <div className="bg-[#243E36FF]/50 p-3 rounded-lg">
+              <BookOpen className="w-8 h-8 text-[#243E36FF]" />
             </div>
           </div>
         </div>
@@ -113,8 +113,8 @@ export const StudentDashboard = () => {
                 {stats.avgProgress}%
               </p>
             </div>
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <TrendingUp className="w-8 h-8 text-purple-600" />
+            <div className="bg-[#47126b]/50 p-3 rounded-lg">
+              <TrendingUp className="w-8 h-8 text-[#47126b]/85" />
             </div>
           </div>
         </div>
@@ -172,7 +172,7 @@ export const StudentDashboard = () => {
           </p>
           <Link
             to="/catalog"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+            className="inline-block bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
           >
             Browse Courses
           </Link>
