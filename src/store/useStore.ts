@@ -1,286 +1,529 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-// import { Course, Lesson, User, Progress, Enrollment } from "@/types";
-import {
-  mockCourses,
-  mockLessons,
-  mockUsers,
-  mockProgress,
-  mockEnrollments,
-} from "../api/mockData";
 import type { Course, Enrollment, Lesson, Progress, User } from "@/types";
+
+// Import Supabase APIs
+import {
+  courseAPI,
+  lessonAPI,
+  enrollmentAPI,
+  progressAPI,
+  userAPI,
+} from "@/api/backend";
 
 interface AppState {
   // Current user
   currentUser: User | null;
+  isLoading: boolean;
 
-  // Data
+  // Data - initially empty, will be fetched from Supabase
   courses: Course[];
   lessons: Lesson[];
   progress: Progress[];
   enrollments: Enrollment[];
-  users: User[];
 
   // Actions
   setCurrentUser: (user: User | null) => void;
+  initializeUser: (
+    clerkId: string,
+    email: string,
+    name: string
+  ) => Promise<void>;
+  logoutUser: () => Promise<void>;
 
   // Course actions
-  addCourse: (course: Course) => void;
-  updateCourse: (courseId: string, updates: Partial<Course>) => void;
-  deleteCourse: (courseId: string) => void;
+  fetchCourses: () => Promise<void>;
+  addCourse: (
+    course: Omit<Course, "id" | "createdAt" | "updatedAt">
+  ) => Promise<Course>;
+  updateCourse: (courseId: string, updates: Partial<Course>) => Promise<Course>;
+  deleteCourse: (courseId: string) => Promise<void>;
 
   // Lesson actions
-  addLesson: (lesson: Lesson) => void;
-  updateLesson: (lessonId: string, updates: Partial<Lesson>) => void;
-  deleteLesson: (lessonId: string) => void;
+  fetchLessonsByCourse: (courseId: string) => Promise<Lesson[]>;
+  addLesson: (lesson: Omit<Lesson, "id">) => Promise<Lesson>;
+  updateLesson: (lessonId: string, updates: Partial<Lesson>) => Promise<Lesson>;
+  deleteLesson: (lessonId: string) => Promise<void>;
 
   // Enrollment actions
-  enrollCourse: (userId: string, courseId: string) => void;
-  unenrollCourse: (userId: string, courseId: string) => void;
+  fetchUserEnrollments: (userId?: string) => Promise<Enrollment[]>;
+  enrollCourse: (courseId: string) => Promise<Enrollment>;
+  unenrollCourse: (courseId: string) => Promise<void>;
+  isUserEnrolled: (courseId: string) => Promise<boolean>;
 
   // Progress actions
-  markLessonComplete: (
-    userId: string,
-    courseId: string,
-    lessonId: string
-  ) => void;
+  fetchCourseProgress: (courseId: string) => Promise<Progress[]>;
+  markLessonComplete: (courseId: string, lessonId: string) => Promise<Progress>;
   markLessonIncomplete: (
-    userId: string,
     courseId: string,
     lessonId: string
-  ) => void;
-  updateLastAccessed: (
-    userId: string,
-    courseId: string,
-    lessonId: string
-  ) => void;
+  ) => Promise<Progress>;
+  updateLastAccessed: (courseId: string, lessonId: string) => Promise<Progress>;
+  getCourseProgress: (courseId: string) => Promise<number>;
 
   // Utility functions
-  getCourseProgress: (userId: string, courseId: string) => number;
-  isUserEnrolled: (userId: string, courseId: string) => boolean;
   getLessonsByCourse: (courseId: string) => Lesson[];
+  refreshData: () => Promise<void>;
 }
 
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
-      // Initial state
-      currentUser: mockUsers[1], // Default to student user for demo
-      courses: mockCourses,
-      lessons: mockLessons,
-      progress: mockProgress,
-      enrollments: mockEnrollments,
-      users: mockUsers,
+      // Initial state - empty arrays
+      currentUser: null,
+      isLoading: false,
+      courses: [],
+      lessons: [],
+      progress: [],
+      enrollments: [],
 
       // User actions
       setCurrentUser: (user) => set({ currentUser: user }),
 
+      // Initialize user with Clerk and fetch their data
+      initializeUser: async (clerkId: string, email: string, name: string) => {
+        set({ isLoading: true });
+        try {
+          // Try to get existing user
+          let user = await userAPI.getByClerkId(clerkId);
+
+          // If user doesn't exist, create them
+          if (!user) {
+            user = await userAPI.create({
+              clerkId: clerkId,
+              email,
+              name,
+              role: "student", // Default role
+            });
+          }
+
+          set({ currentUser: user });
+
+          // Fetch initial data for this user
+          await get().refreshData();
+        } catch (error) {
+          console.error("Error initializing user:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      // Logout user and clear data
+      logoutUser: async () => {
+        set({
+          currentUser: null,
+          courses: [],
+          lessons: [],
+          progress: [],
+          enrollments: [],
+        });
+      },
+
+      // Refresh all data for current user
+      refreshData: async () => {
+        const { currentUser } = get();
+        if (!currentUser) return;
+
+        try {
+          set({ isLoading: true });
+
+          // Fetch courses (all users can see courses)
+          const courses = await courseAPI.getAll();
+          set({ courses });
+
+          // Fetch user-specific data
+          const [enrollments] = await Promise.all([
+            enrollmentAPI.getByUser(currentUser.id),
+          ]);
+
+          set({ enrollments });
+        } catch (error) {
+          console.error("Error refreshing data:", error);
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      // Fetch all courses
+      fetchCourses: async () => {
+        set({ isLoading: true });
+        try {
+          const courses = await courseAPI.getAll();
+          set({ courses });
+        } catch (error) {
+          console.error("Error fetching courses:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
       // Course actions
-      addCourse: (course) =>
-        set((state) => ({
-          courses: [...state.courses, course],
-        })),
+      addCourse: async (course) => {
+        set({ isLoading: true });
+        try {
+          const newCourse = await courseAPI.create(course);
+          set((state) => ({
+            courses: [...state.courses, newCourse],
+          }));
+          return newCourse;
+        } catch (error) {
+          console.error("Error creating course:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
-      updateCourse: (courseId, updates) =>
-        set((state) => ({
-          courses: state.courses.map((c) =>
-            c.id === courseId
-              ? { ...c, ...updates, updatedAt: new Date().toISOString() }
-              : c
-          ),
-        })),
+      updateCourse: async (courseId, updates) => {
+        set({ isLoading: true });
+        try {
+          const updatedCourse = await courseAPI.update(courseId, updates);
+          set((state) => ({
+            courses: state.courses.map((c) =>
+              c.id === courseId ? updatedCourse : c
+            ),
+          }));
+          return updatedCourse;
+        } catch (error) {
+          console.error("Error updating course:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
-      deleteCourse: (courseId) =>
-        set((state) => ({
-          courses: state.courses.filter((c) => c.id !== courseId),
-          lessons: state.lessons.filter((l) => l.courseId !== courseId),
-          enrollments: state.enrollments.filter((e) => e.courseId !== courseId),
-          progress: state.progress.filter((p) => p.courseId !== courseId),
-        })),
+      deleteCourse: async (courseId) => {
+        set({ isLoading: true });
+        try {
+          await courseAPI.delete(courseId);
+          set((state) => ({
+            courses: state.courses.filter((c) => c.id !== courseId),
+            lessons: state.lessons.filter((l) => l.courseId !== courseId),
+            enrollments: state.enrollments.filter(
+              (e) => e.courseId !== courseId
+            ),
+            progress: state.progress.filter((p) => p.courseId !== courseId),
+          }));
+        } catch (error) {
+          console.error("Error deleting course:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
       // Lesson actions
-      addLesson: (lesson) =>
-        set((state) => ({
-          lessons: [...state.lessons, lesson],
-        })),
+      fetchLessonsByCourse: async (courseId: string) => {
+        set({ isLoading: true });
+        try {
+          const lessons = await lessonAPI.getByCourse(courseId);
+          // Update lessons in state
+          set((state) => ({
+            lessons: [
+              ...state.lessons.filter((l) => l.courseId !== courseId),
+              ...lessons,
+            ],
+          }));
+          return lessons;
+        } catch (error) {
+          console.error("Error fetching lessons:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
-      updateLesson: (lessonId, updates) =>
-        set((state) => ({
-          lessons: state.lessons.map((l) =>
-            l.id === lessonId ? { ...l, ...updates } : l
-          ),
-        })),
+      addLesson: async (lesson) => {
+        set({ isLoading: true });
+        try {
+          const newLesson = await lessonAPI.create(lesson);
+          set((state) => ({
+            lessons: [...state.lessons, newLesson],
+          }));
+          return newLesson;
+        } catch (error) {
+          console.error("Error creating lesson:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
-      deleteLesson: (lessonId) =>
-        set((state) => ({
-          lessons: state.lessons.filter((l) => l.id !== lessonId),
-          progress: state.progress.filter((p) => p.lessonId !== lessonId),
-        })),
+      updateLesson: async (lessonId, updates) => {
+        set({ isLoading: true });
+        try {
+          const updatedLesson = await lessonAPI.update(lessonId, updates);
+          set((state) => ({
+            lessons: state.lessons.map((l) =>
+              l.id === lessonId ? updatedLesson : l
+            ),
+          }));
+          return updatedLesson;
+        } catch (error) {
+          console.error("Error updating lesson:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      deleteLesson: async (lessonId) => {
+        set({ isLoading: true });
+        try {
+          await lessonAPI.delete(lessonId);
+          set((state) => ({
+            lessons: state.lessons.filter((l) => l.id !== lessonId),
+            progress: state.progress.filter((p) => p.lessonId !== lessonId),
+          }));
+        } catch (error) {
+          console.error("Error deleting lesson:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
       // Enrollment actions
-      enrollCourse: (userId, courseId) => {
-        const existingEnrollment = get().enrollments.find(
-          (e) => e.userId === userId && e.courseId === courseId
-        );
+      fetchUserEnrollments: async (userId?: string) => {
+        const { currentUser } = get();
+        const targetUserId = userId || currentUser?.id;
 
-        if (!existingEnrollment) {
-          const newEnrollment: Enrollment = {
-            id: `enroll-${Date.now()}`,
-            userId,
-            courseId,
-            enrolledAt: new Date().toISOString(),
-            status: "active",
-            completionPercentage: 0,
-          };
+        if (!targetUserId) return [];
 
-          set((state) => ({
-            enrollments: [...state.enrollments, newEnrollment],
-          }));
+        set({ isLoading: true });
+        try {
+          const enrollments = await enrollmentAPI.getByUser(targetUserId);
+          set({ enrollments });
+          return enrollments;
+        } catch (error) {
+          console.error("Error fetching enrollments:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
         }
       },
 
-      unenrollCourse: (userId, courseId) =>
-        set((state) => ({
-          enrollments: state.enrollments.filter(
-            (e) => !(e.userId === userId && e.courseId === courseId)
-          ),
-          progress: state.progress.filter(
-            (p) => !(p.userId === userId && p.courseId === courseId)
-          ),
-        })),
+      enrollCourse: async (courseId: string) => {
+        const { currentUser } = get();
+        if (!currentUser) throw new Error("User not authenticated");
+
+        set({ isLoading: true });
+        try {
+          const enrollment = await enrollmentAPI.enroll(
+            currentUser.id,
+            courseId
+          );
+          set((state) => ({
+            enrollments: [...state.enrollments, enrollment],
+          }));
+          return enrollment;
+        } catch (error) {
+          console.error("Error enrolling in course:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      unenrollCourse: async (courseId: string) => {
+        const { currentUser } = get();
+        if (!currentUser) throw new Error("User not authenticated");
+
+        set({ isLoading: true });
+        try {
+          await enrollmentAPI.unenroll(currentUser.id, courseId);
+          set((state) => ({
+            enrollments: state.enrollments.filter(
+              (e) => !(e.userId === currentUser.id && e.courseId === courseId)
+            ),
+            progress: state.progress.filter(
+              (p) => !(p.userId === currentUser.id && p.courseId === courseId)
+            ),
+          }));
+        } catch (error) {
+          console.error("Error unenrolling from course:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      isUserEnrolled: async (courseId: string) => {
+        const { currentUser } = get();
+        if (!currentUser) return false;
+
+        try {
+          return await enrollmentAPI.isEnrolled(currentUser.id, courseId);
+        } catch (error) {
+          console.error("Error checking enrollment:", error);
+          return false;
+        }
+      },
 
       // Progress actions
-      markLessonComplete: (userId, courseId, lessonId) => {
-        const state = get();
-        const existingProgress = state.progress.find(
-          (p) =>
-            p.userId === userId &&
-            p.courseId === courseId &&
-            p.lessonId === lessonId
-        );
+      fetchCourseProgress: async (courseId: string) => {
+        const { currentUser } = get();
+        if (!currentUser) return [];
 
-        if (existingProgress) {
+        set({ isLoading: true });
+        try {
+          const progress = await progressAPI.getByCourse(
+            currentUser.id,
+            courseId
+          );
+          // Update progress in state for this course
           set((state) => ({
-            progress: state.progress.map((p) =>
-              p.id === existingProgress.id
-                ? {
-                    ...p,
-                    completed: true,
-                    completedAt: new Date().toISOString(),
-                  }
-                : p
-            ),
+            progress: [
+              ...state.progress.filter(
+                (p) => !(p.userId === currentUser.id && p.courseId === courseId)
+              ),
+              ...progress,
+            ],
           }));
-        } else {
-          const newProgress: Progress = {
-            id: `progress-${Date.now()}`,
-            userId,
-            courseId,
-            lessonId,
-            completed: true,
-            completedAt: new Date().toISOString(),
-            lastAccessedAt: new Date().toISOString(),
-          };
-
-          set((state) => ({
-            progress: [...state.progress, newProgress],
-          }));
+          return progress;
+        } catch (error) {
+          console.error("Error fetching progress:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
         }
-
-        // Update enrollment completion percentage
-        const courseProgress = get().getCourseProgress(userId, courseId);
-        set((state) => ({
-          enrollments: state.enrollments.map((e) =>
-            e.userId === userId && e.courseId === courseId
-              ? {
-                  ...e,
-                  completionPercentage: courseProgress,
-                  status: courseProgress === 100 ? "completed" : "active",
-                }
-              : e
-          ),
-        }));
       },
 
-      markLessonIncomplete: (userId, courseId, lessonId) => {
-        set((state) => ({
-          progress: state.progress.map((p) =>
-            p.userId === userId &&
-            p.courseId === courseId &&
-            p.lessonId === lessonId
-              ? { ...p, completed: false, completedAt: undefined }
-              : p
-          ),
-        }));
+      markLessonComplete: async (courseId: string, lessonId: string) => {
+        const { currentUser } = get();
+        if (!currentUser) throw new Error("User not authenticated");
 
-        // Update enrollment completion percentage
-        const courseProgress = get().getCourseProgress(userId, courseId);
-        set((state) => ({
-          enrollments: state.enrollments.map((e) =>
-            e.userId === userId && e.courseId === courseId
-              ? { ...e, completionPercentage: courseProgress, status: "active" }
-              : e
-          ),
-        }));
-      },
-
-      updateLastAccessed: (userId, courseId, lessonId) => {
-        const state = get();
-        const existingProgress = state.progress.find(
-          (p) =>
-            p.userId === userId &&
-            p.courseId === courseId &&
-            p.lessonId === lessonId
-        );
-
-        if (existingProgress) {
-          set((state) => ({
-            progress: state.progress.map((p) =>
-              p.id === existingProgress.id
-                ? { ...p, lastAccessedAt: new Date().toISOString() }
-                : p
-            ),
-          }));
-        } else {
-          const newProgress: Progress = {
-            id: `progress-${Date.now()}`,
-            userId,
+        set({ isLoading: true });
+        try {
+          const progress = await progressAPI.updateLesson(
+            currentUser.id,
             courseId,
             lessonId,
-            completed: false,
-            lastAccessedAt: new Date().toISOString(),
-          };
+            true
+          );
 
+          // Update progress in state
           set((state) => ({
-            progress: [...state.progress, newProgress],
+            progress: state.progress.map((p) =>
+              p.id === progress.id ? progress : p
+            ),
           }));
+
+          // Update enrollment completion percentage
+          const completionPercentage = await get().getCourseProgress(courseId);
+          set((state) => ({
+            enrollments: state.enrollments.map((e) =>
+              e.userId === currentUser.id && e.courseId === courseId
+                ? {
+                    ...e,
+                    completionPercentage,
+                    status:
+                      completionPercentage === 100 ? "completed" : "active",
+                  }
+                : e
+            ),
+          }));
+
+          return progress;
+        } catch (error) {
+          console.error("Error marking lesson complete:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      markLessonIncomplete: async (courseId: string, lessonId: string) => {
+        const { currentUser } = get();
+        if (!currentUser) throw new Error("User not authenticated");
+
+        set({ isLoading: true });
+        try {
+          const progress = await progressAPI.updateLesson(
+            currentUser.id,
+            courseId,
+            lessonId,
+            false
+          );
+
+          // Update progress in state
+          set((state) => ({
+            progress: state.progress.map((p) =>
+              p.id === progress.id ? progress : p
+            ),
+          }));
+
+          // Update enrollment completion percentage
+          const completionPercentage = await get().getCourseProgress(courseId);
+          set((state) => ({
+            enrollments: state.enrollments.map((e) =>
+              e.userId === currentUser.id && e.courseId === courseId
+                ? {
+                    ...e,
+                    completionPercentage,
+                    status: "active",
+                  }
+                : e
+            ),
+          }));
+
+          return progress;
+        } catch (error) {
+          console.error("Error marking lesson incomplete:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      updateLastAccessed: async (courseId: string, lessonId: string) => {
+        const { currentUser } = get();
+        if (!currentUser) throw new Error("User not authenticated");
+
+        set({ isLoading: true });
+        try {
+          const progress = await progressAPI.updateLesson(
+            currentUser.id,
+            courseId,
+            lessonId,
+            false // Not completed, just accessed
+          );
+
+          // Update progress in state
+          set((state) => ({
+            progress: state.progress.map((p) =>
+              p.id === progress.id ? progress : p
+            ),
+          }));
+
+          return progress;
+        } catch (error) {
+          console.error("Error updating last accessed:", error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      getCourseProgress: async (courseId: string) => {
+        const { currentUser } = get();
+        if (!currentUser) return 0;
+
+        try {
+          return await progressAPI.getCourseCompletion(
+            currentUser.id,
+            courseId
+          );
+        } catch (error) {
+          console.error("Error getting course progress:", error);
+          return 0;
         }
       },
 
       // Utility functions
-      getCourseProgress: (userId, courseId) => {
-        const state = get();
-        const courseLessons = state.lessons.filter(
-          (l) => l.courseId === courseId
-        );
-        if (courseLessons.length === 0) return 0;
-
-        const completedLessons = state.progress.filter(
-          (p) => p.userId === userId && p.courseId === courseId && p.completed
-        );
-
-        return Math.round(
-          (completedLessons.length / courseLessons.length) * 100
-        );
-      },
-
-      isUserEnrolled: (userId, courseId) => {
-        return get().enrollments.some(
-          (e) => e.userId === userId && e.courseId === courseId
-        );
-      },
-
-      getLessonsByCourse: (courseId) => {
+      getLessonsByCourse: (courseId: string) => {
         return get()
           .lessons.filter((l) => l.courseId === courseId)
           .sort((a, b) => a.order - b.order);
@@ -288,6 +531,10 @@ export const useStore = create<AppState>()(
     }),
     {
       name: "elearning-storage",
+      partialize: (state) => ({
+        // Only persist the current user
+        currentUser: state.currentUser,
+      }),
     }
   )
 );
