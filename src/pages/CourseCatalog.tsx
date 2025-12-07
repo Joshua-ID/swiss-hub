@@ -8,20 +8,20 @@ import {
   Users,
 } from "lucide-react";
 import { useStore } from "../store/useStore";
+import { useNavigate } from "react-router-dom";
 import CourseCard from "../components/CourseCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import type { Course } from "@/types";
 
-// Remove the import: import { isCourseLockedForUser } from "../api/mockData";
-
 export const CourseCatalog = () => {
+  const navigate = useNavigate();
   const {
     currentUser,
     courses,
     enrollCourse,
-    isUserEnrolled,
     fetchCourses,
     isLoading,
+    enrollments,
   } = useStore();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,7 +64,7 @@ export const CourseCatalog = () => {
           course.title.toLowerCase().includes(term) ||
           course.description.toLowerCase().includes(term) ||
           (course.category && course.category.toLowerCase().includes(term)) ||
-          (course.instructor && course.instructor.toLowerCase().includes(term))
+          (course.createdBy && course.createdBy.toLowerCase().includes(term))
       );
     }
 
@@ -86,29 +86,12 @@ export const CourseCatalog = () => {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         break;
-      case "popular":
-        result.sort(
-          (a, b) => (b.totalEnrollments || 0) - (a.totalEnrollments || 0)
-        );
-        break;
-      case "rating":
-        result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
       case "duration":
         result.sort((a, b) => a.duration - b.duration);
         break;
       case "featured":
-        result.sort((a, b) => {
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
-          return 0;
-        });
-        break;
       default:
-        // Default: featured first, then by creation date
         result.sort((a, b) => {
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
           return (
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
@@ -121,47 +104,47 @@ export const CourseCatalog = () => {
   const handleEnroll = async (courseId: string) => {
     if (!currentUser) {
       // Redirect to sign in
-      window.location.href = `/sign-in?redirect=/catalog`;
+      navigate(`/sign-in?redirect=/catalog`);
       return;
     }
 
     try {
       await enrollCourse(courseId);
-      // Show success message (you could add a toast notification here)
       console.log("Successfully enrolled in course!");
     } catch (error) {
       console.error("Error enrolling in course:", error);
-      // Show error message
     }
+  };
+
+  // Check if user is enrolled (synchronous check using enrollments array)
+  const isUserEnrolled = (courseId: string): boolean => {
+    if (!currentUser) return false;
+    return enrollments.some(
+      (e) => e.courseId === courseId && e.userId === currentUser.id
+    );
   };
 
   // Check if course is locked (prerequisites not met)
   const isCourseLocked = (course: Course): boolean => {
-    if (!currentUser || course?.prerequisites.length === 0) return false;
+    if (
+      !currentUser ||
+      !course.prerequisites ||
+      course.prerequisites.length === 0
+    )
+      return false;
 
-    // Get user's completed courses
-    const userEnrollments = courses.filter(
-      (c) => c.prerequisites.includes(course.id) // This needs to be adjusted based on your actual data structure
+    // Check if all prerequisites are met
+    const userEnrollments = enrollments.filter(
+      (e) => e.userId === currentUser.id
     );
+    const completedCourseIds = userEnrollments
+      .filter((e) => e.status === "completed")
+      .map((e) => e.courseId);
 
     // Check if all prerequisites are completed
-    // Note: You'll need to implement this logic based on your actual progress data
-    // For now, returning false assuming all prerequisites are met
-    return false;
-  };
-
-  // Get course progress
-  const getCourseProgress = async (courseId: string): Promise<number> => {
-    if (!currentUser) return 0;
-
-    try {
-      // You might want to add a getCourseProgress function to your store
-      // For now, returning 0 as a placeholder
-      return 0;
-    } catch (error) {
-      console.error("Error getting course progress:", error);
-      return 0;
-    }
+    return !course.prerequisites.every((prereqId) =>
+      completedCourseIds.includes(prereqId)
+    );
   };
 
   const handleClearFilters = () => {
@@ -169,6 +152,10 @@ export const CourseCatalog = () => {
     setSelectedCategory("all");
     setSelectedLevel("all");
     setSortBy("featured");
+  };
+
+  const handleCourseClick = (courseId: string) => {
+    navigate(`/course/${courseId}`);
   };
 
   if (isLoading || localLoading) {
@@ -218,32 +205,37 @@ export const CourseCatalog = () => {
 
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Clock className="w-5 h-5 text-purple-600" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
-                  {courses.filter((c) => c.featured).length}
+                  {courses.length > 0
+                    ? Math.round(
+                        courses.reduce((sum, c) => sum + c.duration, 0) /
+                          courses.length
+                      )
+                    : 0}
+                  h
                 </div>
-                <div className="text-sm text-gray-600">Featured</div>
+                <div className="text-sm text-gray-600">Avg Duration</div>
               </div>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
-                  {Math.round(
-                    courses.reduce((sum, c) => sum + c.duration, 0) /
-                      courses.length
-                  )}
-                  h
+                  {
+                    enrollments.filter((e) => e.userId === currentUser?.id)
+                      .length
+                  }
                 </div>
-                <div className="text-sm text-gray-600">Avg Duration</div>
+                <div className="text-sm text-gray-600">My Enrollments</div>
               </div>
             </div>
           </div>
@@ -255,9 +247,7 @@ export const CourseCatalog = () => {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
-                  {courses
-                    .reduce((sum, c) => sum + (c.totalEnrollments || 0), 0)
-                    .toLocaleString()}
+                  {enrollments.length}
                 </div>
                 <div className="text-sm text-gray-600">Total Enrollments</div>
               </div>
@@ -328,21 +318,17 @@ export const CourseCatalog = () => {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent bg-white"
               >
-                <option value="featured">Featured</option>
-                <option value="newest">Newest</option>
-                <option value="popular">Most Popular</option>
-                <option value="rating">Highest Rated</option>
+                <option value="featured">Newest</option>
                 <option value="duration">Shortest Duration</option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* Active Filters & Clear Button */}
+        {/* Active Filters */}
         {(searchTerm ||
           selectedCategory !== "all" ||
-          selectedLevel !== "all" ||
-          sortBy !== "featured") && (
+          selectedLevel !== "all") && (
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="text-sm text-gray-600">Active filters:</span>
             {searchTerm && (
@@ -351,39 +337,6 @@ export const CourseCatalog = () => {
                 <button
                   onClick={() => setSearchTerm("")}
                   className="text-blue-600 hover:text-blue-800"
-                >
-                  ×
-                </button>
-              </span>
-            )}
-            {selectedCategory !== "all" && (
-              <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
-                Category: {selectedCategory}
-                <button
-                  onClick={() => setSelectedCategory("all")}
-                  className="text-green-600 hover:text-green-800"
-                >
-                  ×
-                </button>
-              </span>
-            )}
-            {selectedLevel !== "all" && (
-              <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full">
-                Level: {selectedLevel}
-                <button
-                  onClick={() => setSelectedLevel("all")}
-                  className="text-yellow-600 hover:text-yellow-800"
-                >
-                  ×
-                </button>
-              </span>
-            )}
-            {sortBy !== "featured" && (
-              <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full">
-                Sort: {sortBy}
-                <button
-                  onClick={() => setSortBy("featured")}
-                  className="text-purple-600 hover:text-purple-800"
                 >
                   ×
                 </button>
@@ -400,107 +353,41 @@ export const CourseCatalog = () => {
       </div>
 
       {/* Results Count */}
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <p className="text-gray-600">
-            Showing{" "}
-            <span className="font-semibold text-gray-900">
-              {filteredCourses.length}
-            </span>{" "}
-            course{filteredCourses.length !== 1 ? "s" : ""}
-            {searchTerm && (
-              <span className="ml-2">
-                for "<span className="font-medium">{searchTerm}</span>"
-              </span>
-            )}
-          </p>
-        </div>
-
-        <div className="text-sm text-gray-500">
-          {courses.length > 0 && (
-            <span>
-              {filteredCourses.length === courses.length
-                ? "Showing all courses"
-                : `Filtered from ${courses.length} total courses`}
-            </span>
-          )}
-        </div>
+      <div className="mb-6">
+        <p className="text-gray-600">
+          Showing{" "}
+          <span className="font-semibold text-gray-900">
+            {filteredCourses.length}
+          </span>{" "}
+          course{filteredCourses.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
-      {/* Featured Courses Section */}
-      {filteredCourses.filter((c) => c.featured).length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-yellow-500" />
-            Featured Courses
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredCourses
-              .filter((course) => course.featured)
-              .map((course) => {
-                const enrolled = currentUser
-                  ? isUserEnrolled(course.id)
-                  : false;
-                const locked = isCourseLocked(course);
-
-                return (
-                  <div key={course.id}>
-                    <CourseCard
-                      course={course}
-                      progress={0} // You'll need to fetch this separately
-                      isLocked={locked}
-                      isEnrolled={enrolled}
-                      onEnroll={() => handleEnroll(course.id)}
-                      onClick={() => {
-                        if (!locked) {
-                          window.location.href = `/course/${course.id}`;
-                        }
-                      }}
-                      featured={true}
-                    />
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-      )}
-
       {/* All Courses Grid */}
-      {filteredCourses.filter((c) => !c.featured).length > 0 && (
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">All Courses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCourses
-              .filter((course) => !course.featured)
-              .map((course) => {
-                const enrolled = currentUser
-                  ? isUserEnrolled(course.id)
-                  : false;
-                const locked = isCourseLocked(course);
+      {filteredCourses.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCourses.map((course) => {
+            const enrolled = isUserEnrolled(course.id);
+            const locked = isCourseLocked(course);
+            const enrollment = enrollments.find(
+              (e) => e.courseId === course.id && e.userId === currentUser?.id
+            );
+            const progress = enrollment?.completionPercentage || 0;
 
-                return (
-                  <div key={course.id}>
-                    <CourseCard
-                      course={course}
-                      progress={0} // You'll need to fetch this separately
-                      isLocked={locked}
-                      isEnrolled={enrolled}
-                      onEnroll={() => handleEnroll(course.id)}
-                      onClick={() => {
-                        if (!locked) {
-                          window.location.href = `/course/${course.id}`;
-                        }
-                      }}
-                    />
-                  </div>
-                );
-              })}
-          </div>
+            return (
+              <CourseCard
+                key={course.id}
+                course={course}
+                progress={progress}
+                isLocked={locked}
+                isEnrolled={enrolled}
+                onEnroll={() => handleEnroll(course.id)}
+                onClick={() => handleCourseClick(course.id)}
+              />
+            );
+          })}
         </div>
-      )}
-
-      {/* Empty State */}
-      {filteredCourses.length === 0 && !isLoading && !localLoading && (
+      ) : (
         <div className="bg-white rounded-xl shadow-lg p-12 text-center border">
           <div className="max-w-md mx-auto">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -513,7 +400,7 @@ export const CourseCatalog = () => {
               {searchTerm ||
               selectedCategory !== "all" ||
               selectedLevel !== "all"
-                ? "Try adjusting your search or filters to find what you're looking for"
+                ? "Try adjusting your search or filters"
                 : "No courses are available yet. Check back soon!"}
             </p>
             {(searchTerm ||
@@ -527,30 +414,6 @@ export const CourseCatalog = () => {
               </button>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {(isLoading || localLoading) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse"
-            >
-              <div className="h-48 bg-gray-200"></div>
-              <div className="p-6">
-                <div className="h-4 bg-gray-200 rounded mb-4"></div>
-                <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded mb-4"></div>
-                <div className="flex justify-between items-center">
-                  <div className="h-8 w-24 bg-gray-200 rounded"></div>
-                  <div className="h-8 w-24 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       )}
     </div>

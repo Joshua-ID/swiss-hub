@@ -15,6 +15,7 @@ interface AppState {
   // Current user
   currentUser: User | null;
   isLoading: boolean;
+  error: string | null;
 
   // Data - initially empty, will be fetched from Supabase
   courses: Course[];
@@ -76,6 +77,7 @@ export const useStore = create<AppState>()(
       lessons: [],
       progress: [],
       enrollments: [],
+      error: null,
 
       // User actions
       setCurrentUser: (user) => set({ currentUser: user }),
@@ -147,18 +149,19 @@ export const useStore = create<AppState>()(
 
       // Fetch all courses
       fetchCourses: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
+          console.log("Fetching courses from Supabase...");
           const courses = await courseAPI.getAll();
+          console.log("Courses fetched:", courses.length);
           set({ courses });
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error fetching courses:", error);
-          throw error;
+          set({ error: error.message });
         } finally {
           set({ isLoading: false });
         }
       },
-
       // Course actions
       addCourse: async (course) => {
         set({ isLoading: true });
