@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Course, Enrollment, Lesson, Progress, User } from "@/types";
@@ -16,6 +17,9 @@ interface AppState {
   currentUser: User | null;
   isLoading: boolean;
   error: string | null;
+
+  // NEW: Track if enrollments have been loaded
+  enrollmentsLoaded: boolean;
 
   // Data - initially empty, will be fetched from Supabase
   courses: Course[];
@@ -50,7 +54,7 @@ interface AppState {
   fetchUserEnrollments: (userId?: string) => Promise<Enrollment[]>;
   enrollCourse: (courseId: string) => Promise<Enrollment>;
   unenrollCourse: (courseId: string) => Promise<void>;
-  isUserEnrolled: (courseId: string) => Promise<boolean>;
+  isUserEnrolled: (courseId: string) => boolean; // Changed to synchronous
 
   // Progress actions
   fetchCourseProgress: (courseId: string) => Promise<Progress[]>;
@@ -60,11 +64,14 @@ interface AppState {
     lessonId: string
   ) => Promise<Progress>;
   updateLastAccessed: (courseId: string, lessonId: string) => Promise<Progress>;
-  getCourseProgress: (courseId: string) => Promise<number>;
+  getCourseProgress: (courseId: string, userId?: string) => Promise<number>;
 
   // Utility functions
   getLessonsByCourse: (courseId: string) => Lesson[];
   refreshData: () => Promise<void>;
+
+  // NEW: Ensure enrollments are loaded
+  ensureEnrollmentsLoaded: () => Promise<void>;
 }
 
 export const useStore = create<AppState>()(
@@ -78,6 +85,7 @@ export const useStore = create<AppState>()(
       progress: [],
       enrollments: [],
       error: null,
+      enrollmentsLoaded: false, // NEW
 
       // User actions
       setCurrentUser: (user) => set({ currentUser: user }),
@@ -119,6 +127,7 @@ export const useStore = create<AppState>()(
           lessons: [],
           progress: [],
           enrollments: [],
+          enrollmentsLoaded: false, // Reset flag
         });
       },
 
@@ -135,15 +144,30 @@ export const useStore = create<AppState>()(
           set({ courses });
 
           // Fetch user-specific data
-          const [enrollments] = await Promise.all([
-            enrollmentAPI.getByUser(currentUser.id),
-          ]);
+          const enrollments = await enrollmentAPI.getByUser(currentUser.id);
 
-          set({ enrollments });
+          set({ enrollments, enrollmentsLoaded: true }); // Mark as loaded
         } catch (error) {
           console.error("Error refreshing data:", error);
         } finally {
           set({ isLoading: false });
+        }
+      },
+
+      // NEW: Ensure enrollments are loaded before checking
+      ensureEnrollmentsLoaded: async () => {
+        const { currentUser, enrollmentsLoaded } = get();
+
+        if (!currentUser) return;
+
+        // If already loaded, skip
+        if (enrollmentsLoaded) return;
+
+        try {
+          const enrollments = await enrollmentAPI.getByUser(currentUser.id);
+          set({ enrollments, enrollmentsLoaded: true });
+        } catch (error) {
+          console.error("Error loading enrollments:", error);
         }
       },
 
@@ -162,6 +186,7 @@ export const useStore = create<AppState>()(
           set({ isLoading: false });
         }
       },
+
       // Course actions
       addCourse: async (course) => {
         set({ isLoading: true });
@@ -298,7 +323,7 @@ export const useStore = create<AppState>()(
         set({ isLoading: true });
         try {
           const enrollments = await enrollmentAPI.getByUser(targetUserId);
-          set({ enrollments });
+          set({ enrollments, enrollmentsLoaded: true }); // Mark as loaded
           return enrollments;
         } catch (error) {
           console.error("Error fetching enrollments:", error);
@@ -353,16 +378,14 @@ export const useStore = create<AppState>()(
         }
       },
 
-      isUserEnrolled: async (courseId: string) => {
-        const { currentUser } = get();
+      // CHANGED: Now synchronous - checks enrollments array directly
+      isUserEnrolled: (courseId: string) => {
+        const { currentUser, enrollments } = get();
         if (!currentUser) return false;
 
-        try {
-          return await enrollmentAPI.isEnrolled(currentUser.id, courseId);
-        } catch (error) {
-          console.error("Error checking enrollment:", error);
-          return false;
-        }
+        return enrollments.some(
+          (e) => e.courseId === courseId && e.userId === currentUser.id
+        );
       },
 
       // Progress actions
@@ -408,11 +431,22 @@ export const useStore = create<AppState>()(
           );
 
           // Update progress in state
-          set((state) => ({
-            progress: state.progress.map((p) =>
-              p.id === progress.id ? progress : p
-            ),
-          }));
+          set((state) => {
+            const existingProgress = state.progress.find(
+              (p) => p.id === progress.id
+            );
+            if (existingProgress) {
+              return {
+                progress: state.progress.map((p) =>
+                  p.id === progress.id ? progress : p
+                ),
+              };
+            } else {
+              return {
+                progress: [...state.progress, progress],
+              };
+            }
+          });
 
           // Update enrollment completion percentage
           const completionPercentage = await get().getCourseProgress(courseId);
@@ -485,7 +519,6 @@ export const useStore = create<AppState>()(
         const { currentUser } = get();
         if (!currentUser) throw new Error("User not authenticated");
 
-        set({ isLoading: true });
         try {
           const progress = await progressAPI.updateLesson(
             currentUser.id,
@@ -495,18 +528,27 @@ export const useStore = create<AppState>()(
           );
 
           // Update progress in state
-          set((state) => ({
-            progress: state.progress.map((p) =>
-              p.id === progress.id ? progress : p
-            ),
-          }));
+          set((state) => {
+            const existingProgress = state.progress.find(
+              (p) => p.id === progress.id
+            );
+            if (existingProgress) {
+              return {
+                progress: state.progress.map((p) =>
+                  p.id === progress.id ? progress : p
+                ),
+              };
+            } else {
+              return {
+                progress: [...state.progress, progress],
+              };
+            }
+          });
 
           return progress;
         } catch (error) {
           console.error("Error updating last accessed:", error);
           throw error;
-        } finally {
-          set({ isLoading: false });
         }
       },
 

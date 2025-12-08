@@ -22,6 +22,9 @@ export const CourseCatalog = () => {
     fetchCourses,
     isLoading,
     enrollments,
+    isUserEnrolled,
+    ensureEnrollmentsLoaded,
+    enrollmentsLoaded,
   } = useStore();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,28 +34,32 @@ export const CourseCatalog = () => {
   const [localLoading, setLocalLoading] = useState(true);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
 
-  // Get unique categories from courses
   const categories = [
     "all",
     ...Array.from(new Set(courses.map((c) => c.category).filter(Boolean))),
   ];
 
-  // Fetch courses on mount
+  // Fetch courses and enrollments on mount
   useEffect(() => {
-    const loadCourses = async () => {
+    const loadData = async () => {
+      setLocalLoading(true);
       try {
+        // Fetch courses
         await fetchCourses();
+
+        if (currentUser) {
+          await ensureEnrollmentsLoaded();
+        }
       } catch (error) {
-        console.error("Error loading courses:", error);
+        console.error("Error loading data:", error);
       } finally {
         setLocalLoading(false);
       }
     };
 
-    loadCourses();
-  }, [fetchCourses]);
+    loadData();
+  }, [fetchCourses, ensureEnrollmentsLoaded, currentUser]);
 
-  // Filter and sort courses
   useEffect(() => {
     let result = [...courses];
 
@@ -116,14 +123,6 @@ export const CourseCatalog = () => {
     }
   };
 
-  // Check if user is enrolled (synchronous check using enrollments array)
-  const isUserEnrolled = (courseId: string): boolean => {
-    if (!currentUser) return false;
-    return enrollments.some(
-      (e) => e.courseId === courseId && e.userId === currentUser.id
-    );
-  };
-
   // Check if course is locked (prerequisites not met)
   const isCourseLocked = (course: Course): boolean => {
     if (
@@ -158,7 +157,8 @@ export const CourseCatalog = () => {
     navigate(`/course/${courseId}`);
   };
 
-  if (isLoading || localLoading) {
+  // Show loading while courses OR enrollments are loading
+  if (isLoading || localLoading || (currentUser && !enrollmentsLoaded)) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <LoadingSpinner size="lg" />
@@ -178,21 +178,14 @@ export const CourseCatalog = () => {
               skills
             </p>
           </div>
-
-          {currentUser && (
-            <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-lg">
-              <Users className="w-4 h-4" />
-              <span>Welcome back, {currentUser.name}</span>
-            </div>
-          )}
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-[#243E36FF]/40 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-[#243E36FF]/70" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
@@ -205,8 +198,8 @@ export const CourseCatalog = () => {
 
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-[#47126b]/40 rounded-lg flex items-center justify-center">
+                <Clock className="w-5 h-5 text-[#47126b]/60" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
@@ -332,11 +325,11 @@ export const CourseCatalog = () => {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="text-sm text-gray-600">Active filters:</span>
             {searchTerm && (
-              <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1 bg-[#243E36FF]/40 text-[#243E36FF]/80 text-sm px-3 py-1 rounded-full">
                 Search: "{searchTerm}"
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="text-blue-600 hover:text-blue-800"
+                  className="text-[#243E36FF]/70 hover:text-[#243E36FF]/80"
                 >
                   ×
                 </button>
