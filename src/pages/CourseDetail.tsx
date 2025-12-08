@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,8 +10,6 @@ import {
   Users,
   BookOpen,
   Calendar,
-  Star,
-  BarChart3,
 } from "lucide-react";
 import { useStore } from "../store/useStore";
 import ProgressBadge from "../components/ProgressBadge";
@@ -30,15 +29,16 @@ export const CourseDetail = () => {
     enrollCourse,
     getCourseProgress,
     isLoading,
-    getLessonsByCourse,
-    enrollments,
+    isUserEnrolled,
+    // enrollments,
     progress: allProgress,
+    ensureEnrollmentsLoaded,
+    enrollmentsLoaded,
   } = useStore();
 
   const [course, setCourse] = useState<Course | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [courseProgress, setCourseProgress] = useState(0);
-  const [enrolled, setEnrolled] = useState(false);
   const [localLoading, setLocalLoading] = useState(true);
 
   useEffect(() => {
@@ -47,12 +47,14 @@ export const CourseDetail = () => {
 
       setLocalLoading(true);
       try {
-        // Fetch courses if not loaded
         if (courses.length === 0) {
           await fetchCourses();
         }
 
-        // Find course in store after fetching
+        if (currentUser) {
+          await ensureEnrollmentsLoaded();
+        }
+
         const foundCourse = courses.find((c) => c.id === courseId);
 
         if (!foundCourse) {
@@ -63,18 +65,11 @@ export const CourseDetail = () => {
 
         setCourse(foundCourse);
 
-        // Check enrollment
-        const isEnrolled = enrollments.some(
-          (e) => e.courseId === courseId && e.userId === currentUser?.id
-        );
-        setEnrolled(isEnrolled);
-
-        // Fetch lessons for this course
         const lessonsData = await fetchLessonsByCourse(courseId);
         setLessons(lessonsData);
 
-        // Get progress if enrolled
-        if (isEnrolled && currentUser) {
+        const enrolled = isUserEnrolled(courseId);
+        if (enrolled && currentUser) {
           await fetchCourseProgress(courseId);
           const progress = await getCourseProgress(courseId);
           setCourseProgress(progress);
@@ -87,7 +82,7 @@ export const CourseDetail = () => {
     };
 
     loadCourseData();
-  }, [courseId, courses.length, currentUser, enrollments]);
+  }, [courseId, courses.length, currentUser, enrollmentsLoaded]);
 
   const handleEnroll = async () => {
     if (!currentUser || !courseId) {
@@ -97,17 +92,25 @@ export const CourseDetail = () => {
 
     try {
       await enrollCourse(courseId);
-      setEnrolled(true);
 
-      // Refresh progress
+      // Refresh progress after enrollment
       const progress = await getCourseProgress(courseId);
       setCourseProgress(progress);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error enrolling:", error);
+
+      // Handle 409 conflict (already enrolled)
+      if (error.message && error.message.includes("409")) {
+        alert("You're already enrolled in this course!");
+        // Force refresh enrollments
+        await ensureEnrollmentsLoaded();
+      }
     }
   };
 
   const handleLessonClick = (lessonId: string) => {
+    const enrolled = isUserEnrolled(courseId!);
+
     if (enrolled) {
       navigate(`/lesson/${lessonId}`);
     } else {
@@ -120,7 +123,10 @@ export const CourseDetail = () => {
   };
 
   const getLessonStatus = (lessonId: string, lessonOrder: number) => {
-    if (!currentUser || !enrolled) return "locked";
+    if (!currentUser) return "locked";
+
+    const enrolled = isUserEnrolled(courseId!);
+    if (!enrolled) return "locked";
 
     const lessonProgress = allProgress.find(
       (p) => p.userId === currentUser.id && p.lessonId === lessonId
@@ -144,7 +150,8 @@ export const CourseDetail = () => {
     return "available";
   };
 
-  if (isLoading || localLoading) {
+  // Show loading while data is being fetched
+  if (isLoading || localLoading || (currentUser && !enrollmentsLoaded)) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <LoadingSpinner size="lg" />
@@ -177,6 +184,8 @@ export const CourseDetail = () => {
     );
   }
 
+  const enrolled = isUserEnrolled(courseId!);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -203,7 +212,7 @@ export const CourseDetail = () => {
 
       {/* Course Header */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-        <div className="relative h-72 bg-gradient-to-br from-[#243E36FF]/80 to-[#47126b]/80">
+        <div className="relative h-72 bg-linear-to-br from-[#243E36FF]/80 to-[#47126b]/80">
           {course.thumbnail ? (
             <img
               src={course.thumbnail}
@@ -333,7 +342,7 @@ export const CourseDetail = () => {
               <div className="space-y-4">
                 {lessons.map((lesson) => {
                   const status = getLessonStatus(lesson.id, lesson.order);
-                  const isLocked = status === "locked" || !enrolled;
+                  const isLocked = status === "locked";
                   const isCompleted = status === "completed";
 
                   return (
@@ -401,9 +410,9 @@ export const CourseDetail = () => {
                                 <span
                                   className={`px-2 py-1 rounded text-xs font-medium ${
                                     lesson.type === "video"
-                                      ? "bg-purple-100 text-purple-600"
+                                      ? "bg-[#47126b]/40 text-[#47126b]/60"
                                       : lesson.type === "reading"
-                                      ? "bg-blue-100 text-blue-600"
+                                      ? "bg-[#243E36FF]/40 text-[#243E36FF]/70"
                                       : "bg-orange-100 text-orange-600"
                                   }`}
                                 >
