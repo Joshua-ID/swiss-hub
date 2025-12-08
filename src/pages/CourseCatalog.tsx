@@ -167,7 +167,7 @@ export const CourseCatalog = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-[1700px] mx-auto p-3 md:p-4">
       {/* Header */}
       <div className="mb-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
