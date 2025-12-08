@@ -24,7 +24,7 @@ export const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-40 px-3 md:px-5">
+    <nav className="bg-white w-[calc(100vw-1rem)] shadow-md sticky top-0 z-40 px-3 md:px-5">
       <div className="flex justify-between items-center h-16">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 flex-wrap">
