@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+
+# create supabase schema
+databaseSchema
+
+# seeder
+databaseSeeder
 .env
 
 # Editor directories and files

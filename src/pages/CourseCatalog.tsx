@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import {
   Search,
   Filter,
-  Sparkles,
-  TrendingUp,
-  Users,
   X,
   CircleGauge,
   ArrowUpNarrowWide,
+  GalleryVerticalEnd,
+  ReplaceAll,
+  ClipboardCopy,
 } from "lucide-react";
 import { useStore } from "../store/useStore";
 import { useNavigate } from "react-router-dom";
@@ -191,7 +191,7 @@ export const CourseCatalog = () => {
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-[#243E36FF]/8 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-[#243E36FF]/70" />
+                <GalleryVerticalEnd className="w-5 h-5 text-[#243E36FF]/70" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
@@ -205,7 +205,7 @@ export const CourseCatalog = () => {
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-600" />
+                <ClipboardCopy className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
@@ -222,7 +222,7 @@ export const CourseCatalog = () => {
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-orange-600" />
+                <ReplaceAll className="w-5 h-5 text-orange-600" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
@@ -236,7 +236,7 @@ export const CourseCatalog = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8 sticky top-4 z-10 border">
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-8 sticky top-14 z-10 border">
         <div className="flex flex-col lg:flex-row gap-6 justify-end items-end">
           {/* Search Bar */}
           <div className="flex-1">

@@ -50,6 +50,9 @@ The project is now live and can be accessed at the URL provided by your hosting 
 
 ## Core Architecture
 
+## SCHEMA Supabase table schema 
+- file table database schema  
+
 ### Directory Structure
 
 ```

@@ -27,7 +27,7 @@ export const Home = () => {
 
         {/* Features Section */}
         <div className="flex flex-col gap-8">
-          <h2 className="text-4xl font-bold text-center ">
+          <h2 className="text-4xl font-bold text-center">
             Why Choose Swiss-Hub?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5">
