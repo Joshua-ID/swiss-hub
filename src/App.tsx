@@ -4,64 +4,72 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { useStore } from "./store/useStore";
 
-import { AdminCourses } from "./pages/AdminCourses";
+// Components
 import { Navbar } from "./components/Navbar";
+import Footer from "./components/Footer";
+
+// Pages
+import { AdminCourses } from "./pages/AdminCourses";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { StudentDashboard } from "./pages/StudentDashboard";
 import { CourseCatalog } from "./pages/CourseCatalog";
 import { CourseDetail } from "./pages/CourseDetail";
 import { LessonView } from "./pages/LessonView";
 import { Home } from "./pages/Home";
-import Footer from "./components/Footer";
+import SignInPage from "./pages/SignInPage";
+import SignUpPage from "./pages/SignUpPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-  const { currentUser } = useStore();
-  const isAdmin = currentUser?.role === "admin";
-
   return (
     <Router>
-      <div className="min-h-screen w-full ">
+      <div className="min-h-screen w-full   flex flex-col">
         <Navbar />
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
+        <main className="grow">
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/sign-in" element={<SignInPage />} />
+            <Route path="/sign-up" element={<SignUpPage />} />
 
-          {/* Admin Routes */}
-          <Route
-            path="/admin"
-            element={
-              isAdmin ? (
-                <AdminDashboard />
-              ) : (
-                <Navigate to="/dashboard" replace />
-              )
-            }
-          />
-          <Route
-            path="/admin/courses"
-            element={
-              isAdmin ? <AdminCourses /> : <Navigate to="/dashboard" replace />
-            }
-          />
+            {/* Course and Lesson Routes (Public view, but some features require auth) */}
+            <Route path="/catalog" element={<CourseCatalog />} />
+            <Route path="/course/:courseId" element={<CourseDetail />} />
+            <Route path="/lesson/:lessonId" element={<LessonView />} />
 
-          {/* Student Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              !isAdmin ? <StudentDashboard /> : <Navigate to="/admin" replace />
-            }
-          />
-          <Route path="/catalog" element={<CourseCatalog />} />
+            {/* Protected Student Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute requireAuth requireRole="student">
+                  <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Course and Lesson Routes */}
-          <Route path="/course/:courseId" element={<CourseDetail />} />
-          <Route path="/lesson/:lessonId" element={<LessonView />} />
+            {/* Protected Admin Routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireAuth requireRole="admin">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/courses"
+              element={
+                <ProtectedRoute requireAuth requireRole="admin">
+                  <AdminCourses />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
         <Footer />
       </div>
     </Router>

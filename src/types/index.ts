@@ -3,8 +3,22 @@ export interface User {
   name: string;
   email: string;
   role: "admin" | "student";
-  createdAt: string;
+  createdAt?: string;
 }
+
+// export interface Course {
+//   id: string;
+//   title: string;
+//   description: string;
+//   thumbnail: string;
+//   category: string;
+//   prerequisites?: string[]; // Array of course IDs
+//   duration?: number | string; // in hours
+//   level: "beginner" | "intermediate" | "advanced";
+//   createdBy?: string; // Admin user ID
+//   createdAt?: string;
+//   updatedAt?: string;
+// }
 
 export interface Course {
   id: string;
@@ -12,12 +26,20 @@ export interface Course {
   description: string;
   thumbnail: string;
   category: string;
-  prerequisites: string[]; // Array of course IDs
-  duration: number; // in hours
+  prerequisites: string[];
+  duration: number;
   level: "beginner" | "intermediate" | "advanced";
-  createdBy: string; // Admin user ID
+  createdBy: string;
   createdAt: string;
   updatedAt: string;
+
+  // Add these optional properties to match Supabase data
+  instructor?: string;
+  featured?: boolean;
+  totalEnrollments?: number;
+  rating?: number;
+  price?: number;
+  shortDescription?: string;
 }
 
 export interface Lesson {
