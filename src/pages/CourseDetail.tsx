@@ -479,15 +479,15 @@ export const CourseDetail = () => {
             </h3>
             <ul className="space-y-2">
               <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                 <span className="text-gray-600">Basic computer skills</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                 <span className="text-gray-600">Internet connection</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                 <span className="text-gray-600">
                   {course.level === "beginner"
                     ? "No prior experience needed"

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Layout } from "lucide-react";
+import { BookMarked, BookOpen, Layout, LibraryBig } from "lucide-react";
 import { useUser, SignInButton, UserButton } from "@clerk/clerk-react";
 import { useStore } from "../store/useStore";
 import { useEffect } from "react";
@@ -80,7 +80,7 @@ export const Navbar = () => {
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
-                    <Layout className="w-5 h-5" />
+                    <BookMarked className="w-5 h-5" />
                     <span className="font-medium">My Learning</span>
                   </Link>
                   <Link
@@ -91,7 +91,7 @@ export const Navbar = () => {
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
-                    <BookOpen className="w-5 h-5" />
+                    <LibraryBig className="w-5 h-5" />
                     <span className="font-medium">Browse Courses</span>
                   </Link>
                 </>

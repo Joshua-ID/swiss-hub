@@ -4,8 +4,10 @@ import {
   Filter,
   Sparkles,
   TrendingUp,
-  Clock,
   Users,
+  X,
+  CircleGauge,
+  ArrowUpNarrowWide,
 } from "lucide-react";
 import { useStore } from "../store/useStore";
 import { useNavigate } from "react-router-dom";
@@ -96,6 +98,10 @@ export const CourseCatalog = () => {
       case "duration":
         result.sort((a, b) => a.duration - b.duration);
         break;
+      case "popularity":
+        // levels are strings like "beginner"/"intermediate"/"advanced" — compare as strings
+        result.sort((a, b) => (a.level ?? "").localeCompare(b.level ?? ""));
+        break;
       case "featured":
       default:
         result.sort((a, b) => {
@@ -171,9 +177,9 @@ export const CourseCatalog = () => {
       {/* Header */}
       <div className="mb-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900">Course Catalog</h1>
-            <p className="text-gray-600 mt-2 text-lg">
+          <div className="space-y-2">
+            <h1 className="text-4xl  font-bold ">Course Catalog</h1>
+            <p className="text-gray-600 text-lg">
               Explore our collection of expert-led courses and advance your
               skills
             </p>
@@ -181,10 +187,10 @@ export const CourseCatalog = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#243E36FF]/40 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-[#243E36FF]/8 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-[#243E36FF]/70" />
               </div>
               <div>
@@ -198,27 +204,7 @@ export const CourseCatalog = () => {
 
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#47126b]/40 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-[#47126b]/60" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {courses.length > 0
-                    ? Math.round(
-                        courses.reduce((sum, c) => sum + c.duration, 0) /
-                          courses.length
-                      )
-                    : 0}
-                  h
-                </div>
-                <div className="text-sm text-gray-600">Avg Duration</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl shadow-sm border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
               <div>
@@ -235,7 +221,7 @@ export const CourseCatalog = () => {
 
           <div className="bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-orange-600" />
               </div>
               <div>
@@ -251,7 +237,7 @@ export const CourseCatalog = () => {
 
       {/* Filters Section */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8 sticky top-4 z-10 border">
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 justify-end items-end">
           {/* Search Bar */}
           <div className="flex-1">
             <div className="relative">
@@ -288,6 +274,7 @@ export const CourseCatalog = () => {
 
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <CircleGauge className="inline w-4 h-4 mr-1" />
                 Level
               </label>
               <select
@@ -302,16 +289,19 @@ export const CourseCatalog = () => {
               </select>
             </div>
 
-            <div className="flex-1">
+            <div className="flex-1 ">
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <ArrowUpNarrowWide className="inline w-4 h-4 mr-1" />
                 Sort By
               </label>
               <select
+                disabled
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent bg-white"
+                className="cursor-not-allowed w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent bg-white"
               >
                 <option value="featured">Newest</option>
+                <option value="level">Levels</option>
                 <option value="duration">Shortest Duration</option>
               </select>
             </div>
@@ -325,19 +315,21 @@ export const CourseCatalog = () => {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="text-sm text-gray-600">Active filters:</span>
             {searchTerm && (
-              <span className="inline-flex items-center gap-1 bg-[#243E36FF]/40 text-[#243E36FF]/80 text-sm px-3 py-1 rounded-full">
-                Search: "{searchTerm}"
+              <span className="inline-flex items-center gap-1  bg-[#243E36FF]/10 text-[#243E36FF]/80 text-sm px-3 py-1 rounded-full">
+                <span className="border-r border-[#243E36FF] pr-6">
+                  Search: "{searchTerm}"
+                </span>
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="text-[#243E36FF]/70 hover:text-[#243E36FF]/80"
+                  className="text-[#243E36FF]/70 hover:text-[#243E36FF]/80 hover:bg-[#243E36FF]/10 rounded-full p-1"
                 >
-                  ×
+                  <X className="w-4 h-4" />
                 </button>
               </span>
             )}
             <button
               onClick={handleClearFilters}
-              className="ml-auto text-sm text-gray-600 hover:text-gray-900 underline"
+              className="ml-auto text-sm bg-[#243E36FF]/10 px-3 py-1 rounded-full text-gray-600 hover:text-white hover:bg-[#243E36FF]/80"
             >
               Clear all filters
             </button>

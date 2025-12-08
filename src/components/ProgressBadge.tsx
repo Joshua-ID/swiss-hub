@@ -56,7 +56,7 @@ const ProgressBadge: React.FC<ProgressBadgeProps> = ({
         return "text-gray-400";
       case "in-progress":
       default:
-        return "text-[#243E36FF]";
+        return "text-[#47126b] text-shadow-sm text-shadow-gray-100";
     }
   };
 

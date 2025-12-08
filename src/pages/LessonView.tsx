@@ -28,6 +28,8 @@ export const LessonView = () => {
     getLessonsByCourse,
     progress: allProgress,
     isLoading,
+    ensureEnrollmentsLoaded,
+    enrollmentsLoaded,
   } = useStore();
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
@@ -47,11 +49,12 @@ export const LessonView = () => {
           await fetchCourses();
         }
 
-        // Find lesson in store (might need to fetch first)
+        if (currentUser) {
+          await ensureEnrollmentsLoaded();
+        }
+
         let foundLesson = getLessonsByCourse("").find((l) => l.id === lessonId);
 
-        // If lesson not found, we need to know which course it belongs to
-        // For now, try fetching all course lessons
         if (!foundLesson && courses.length > 0) {
           for (const c of courses) {
             const lessons = await fetchLessonsByCourse(c.id);
@@ -68,7 +71,6 @@ export const LessonView = () => {
 
         setLesson(foundLesson);
 
-        // Find the course
         const foundCourse = courses.find((c) => c.id === foundLesson!.courseId);
         if (!foundCourse) {
           console.log("Course not found for lesson");
@@ -77,16 +79,11 @@ export const LessonView = () => {
         }
 
         setCourse(foundCourse);
-
-        // Fetch all lessons for this course
         const lessons = await fetchLessonsByCourse(foundCourse.id);
         setCourseLessons(lessons.sort((a, b) => a.order - b.order));
 
-        // Fetch progress if user is logged in
         if (currentUser) {
           await fetchCourseProgress(foundCourse.id);
-
-          // Update last accessed
           await updateLastAccessed(foundCourse.id, lessonId);
 
           // Check if completed
@@ -103,9 +100,8 @@ export const LessonView = () => {
     };
 
     loadLessonData();
-  }, [lessonId, currentUser]);
+  }, [lessonId, currentUser, enrollmentsLoaded]);
 
-  // Update completion status when progress changes
   useEffect(() => {
     if (currentUser && lessonId) {
       const lessonProgress = allProgress.find(
@@ -133,7 +129,7 @@ export const LessonView = () => {
     navigate(`/lesson/${targetLessonId}`);
   };
 
-  if (isLoading || localLoading) {
+  if (isLoading || localLoading || (currentUser && !enrollmentsLoaded)) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <LoadingSpinner size="lg" />
@@ -143,7 +139,7 @@ export const LessonView = () => {
 
   if (!lesson || !course) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <div className="max-w-[1700px] w-full mx-auto px-4 py-12">
         <div className="text-center">
           <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
             <BookOpen className="w-12 h-12 text-gray-400" />
@@ -182,7 +178,7 @@ export const LessonView = () => {
   ).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen max-w-[1700px] bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30 px-4 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -221,52 +217,32 @@ export const LessonView = () => {
           {/* Left Column - Video and Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Course Context */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h2 className="text-sm font-semibold text-blue-900 mb-1">
+            <div className="bg-[#243E36FF]/30 border border-[#243E36FF]/45 rounded-lg p-4">
+              <h2 className="text-sm font-semibold text-[#243E36FF] mb-1">
                 {course.title}
               </h2>
-              <p className="text-xs text-blue-700">{course.category}</p>
+              <p className="text-xs text-[#243E36FF]/70">{course.category}</p>
             </div>
 
             {/* Video Player */}
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+              <div className="aspect-video bg-black">
                 {lesson.videoUrl ? (
-                  <div className="text-center text-white p-8">
-                    <div className="mb-4">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center">
-                        <svg
-                          className="w-8 h-8"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <p className="text-lg font-semibold mb-2">Video Player</p>
-                    <p className="text-sm text-gray-400 mb-4">
-                      Duration: {lesson.duration} minutes
-                    </p>
-                    <p className="text-xs text-gray-500 max-w-md mx-auto">
-                      In production, integrate with your video hosting service
-                      (YouTube, Vimeo, Cloudflare Stream, or custom HLS player)
-                    </p>
-                    {lesson.videoUrl.startsWith("http") && (
-                      <a
-                        href={lesson.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block mt-4 text-blue-400 hover:text-blue-300 text-sm underline"
-                      >
-                        Open video in new tab
-                      </a>
-                    )}
-                  </div>
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={lesson.videoUrl}
+                    title={lesson.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  ></iframe>
                 ) : (
-                  <div className="text-center text-gray-400">
-                    <FileText className="w-16 h-16 mx-auto mb-4" />
-                    <p>No video available</p>
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <div className="text-center">
+                      <FileText className="w-16 h-16 mx-auto mb-4" />
+                      <p>No video available</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -285,9 +261,9 @@ export const LessonView = () => {
                     <span
                       className={`px-2 py-1 rounded text-xs font-medium ${
                         lesson.type === "video"
-                          ? "bg-purple-100 text-purple-700"
+                          ? "bg-[#47126b]/40 text-[#47126b]/70"
                           : lesson.type === "reading"
-                          ? "bg-blue-100 text-blue-700"
+                          ? "bg-[#243E36FF]/40 text-[#243E36FF]/70"
                           : "bg-orange-100 text-orange-700"
                       }`}
                     >
@@ -327,10 +303,6 @@ export const LessonView = () => {
                 <span className="sm:hidden">Previous</span>
               </button>
 
-              <div className="text-center text-sm text-gray-500">
-                {currentIndex + 1} / {courseLessons.length}
-              </div>
-
               <button
                 onClick={() => nextLesson && handleNavigate(nextLesson.id)}
                 disabled={!nextLesson}
@@ -363,29 +335,23 @@ export const LessonView = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {lesson.materials.map((material) => (
+                    {lesson.materials.map((material, index) => (
                       <a
-                        key={material.id}
+                        key={material.id || index}
                         href={material.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-[#243E36FF] hover:bg-[#243E36FF]/5 transition-colors group"
                       >
-                        <div className="flex-shrink-0 w-10 h-10 bg-[#243E36FF]/10 rounded-lg flex items-center justify-center group-hover:bg-[#243E36FF]/20 transition-colors">
-                          {material.type === "pdf" ||
-                          material.type === "document" ||
-                          material.type === "slide" ? (
-                            <FileText className="w-5 h-5 text-[#243E36FF]" />
-                          ) : (
-                            <Download className="w-5 h-5 text-[#243E36FF]" />
-                          )}
+                        <div className="shrink-0 w-10 h-10 bg-[#243E36FF]/10 rounded-lg flex items-center justify-center group-hover:bg-[#243E36FF]/20 transition-colors">
+                          <FileText className="w-5 h-5 text-[#243E36FF]" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 text-sm truncate">
-                            {material.title}
+                            {material.title || "Material"}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {material.type.toUpperCase()}
+                            {material.type?.toUpperCase() || "FILE"}
                             {material.size && ` • ${material.size}`}
                           </p>
                         </div>
