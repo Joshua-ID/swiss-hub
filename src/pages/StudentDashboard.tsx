@@ -1,6 +1,5 @@
-import React from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, Clock, Award, TrendingUp } from "lucide-react";
+import { BookOpen, Clock, Award, TrendingUp, Users } from "lucide-react";
 import { useStore } from "../store/useStore";
 import CourseCard from "../components/CourseCard";
 
@@ -48,15 +47,21 @@ export const StudentDashboard = () => {
   };
 
   return (
-    <div>
+    <div className="flex max-w-[1700px] p-3 md:p-6 mx-auto  gap-7 md:gap-14 flex-col">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          My Learning Dashboard
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Track your progress and continue learning
-        </p>
+      <div className="flex items-center justify-between ">
+        {currentUser && (
+          <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-lg">
+            <Users className="w-4 h-4" />
+            <span>Welcome back, {currentUser.name}</span>
+          </div>
+        )}
+        <div>
+          <h1 className="text-3xl font-bold text-right">Student Dashboard</h1>
+          <p className="text-gray-600 text-right">
+            Track your progress and continue learning
+          </p>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -122,18 +127,18 @@ export const StudentDashboard = () => {
 
       {/* Active Courses */}
       {activeCourses.length > 0 && (
-        <div className="mb-8">
+        <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
               Continue Learning
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
             {activeCourses.map((course) => (
               <Link key={course.id} to={`/course/${course.id}`}>
                 <CourseCard
                   course={course}
-                  progress={course.progress}
+                  progress={Number(course.progress)}
                   isEnrolled={true}
                 />
               </Link>
@@ -162,7 +167,7 @@ export const StudentDashboard = () => {
 
       {/* Empty State */}
       {enrolledCourses.length === 0 && (
-        <div className="bg-white rounded-xl shadow-md p-12 text-center">
+        <div className="bg-white rounded-xl w-full shadow-md p-12 text-center">
           <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-gray-900 mb-2">
             No Enrolled Courses Yet

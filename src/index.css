@@ -140,14 +140,12 @@ DynaPuff
 }
 
 body {
-  margin: 0;
   display: flex;
   min-width: 320px;
   min-height: 100vh;
-  max-width: 2040px;
-  margin: 0 auto;
-  font-size: clamp(0.78125rem, 0.7671rem + 0.0708vw, 0.875rem);
   width: 100%;
+  font-size: clamp(0.78125rem, 0.7671rem + 0.0708vw, 0.875rem);
+
   &::selection {
     background-color: var(--color-muted-foreground);
     color: var(--color-primary-foreground);
