@@ -178,8 +178,8 @@ export const CourseCatalog = () => {
       <div className="mb-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div className="space-y-2">
-            <h1 className="text-4xl  font-bold ">Course Catalog</h1>
-            <p className="text-gray-600 text-lg">
+            <h1 className="sm:text-4xl text-2xl  font-bold ">Course Catalog</h1>
+            <p className="text-gray-600 sm:text-lg text-xs">
               Explore our collection of expert-led courses and advance your
               skills
             </p>
@@ -187,73 +187,62 @@ export const CourseCatalog = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-xl shadow-sm border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#243E36FF]/8 rounded-lg flex items-center justify-center">
-                <GalleryVerticalEnd className="w-5 h-5 text-[#243E36FF]/70" />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-8">
+          <div className="flex items-center flex-col sm:flex-row text-center sm:text-left  gap-3 bg-white p-4 rounded-xl shadow-sm border">
+            <div className="w-10 h-10 bg-[#243E36FF]/8 rounded-lg flex items-center justify-center">
+              <GalleryVerticalEnd className="w-5 h-5 text-[#243E36FF]/70" />
+            </div>
+            <div className="mt-auto">
+              <div className="text-2xl font-bold text-gray-900">
+                {courses.length}
               </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {courses.length}
-                </div>
-                <div className="text-sm text-gray-600">Total Courses</div>
-              </div>
+              <div className="text-sm text-gray-600">Total Courses</div>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-xl shadow-sm border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                <ClipboardCopy className="w-5 h-5 text-green-600" />
+          <div className="flex items-center flex-col sm:flex-row text-center sm:text-left  gap-3 bg-white p-4 rounded-xl shadow-sm border">
+            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+              <ClipboardCopy className="w-5 h-5 text-green-600" />
+            </div>
+            <div className="mt-auto">
+              <div className="text-2xl font-bold text-gray-900">
+                {enrollments.filter((e) => e.userId === currentUser?.id).length}
               </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {
-                    enrollments.filter((e) => e.userId === currentUser?.id)
-                      .length
-                  }
-                </div>
-                <div className="text-sm text-gray-600">My Enrollments</div>
-              </div>
+              <div className="text-sm text-gray-600">My Enrollments</div>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-xl shadow-sm border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
-                <ReplaceAll className="w-5 h-5 text-orange-600" />
+          <div className="flex items-center flex-col sm:flex-row text-center sm:text-left  gap-3 bg-white p-4 rounded-xl shadow-sm border">
+            <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+              <ReplaceAll className="w-5 h-5 text-orange-600" />
+            </div>
+            <div className="mt-auto">
+              <div className="text-2xl font-bold text-gray-900">
+                {enrollments.length}
               </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {enrollments.length}
-                </div>
-                <div className="text-sm text-gray-600">Total Enrollments</div>
-              </div>
+              <div className="text-sm text-gray-600">Total Enrollments</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters Section */}
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8 sticky top-14 z-10 border">
-        <div className="flex flex-col lg:flex-row gap-6 justify-end items-end">
+      <div className="bg-white rounded-xl shadow-lg md:p-6 p-3 mb-8 sticky top-3 md:top-14 z-10 border">
+        <div className="flex flex-col-reverse sm:flex-col  lg:flex-row gap-3 md:gap-4 justify-end items-end">
           {/* Search Bar */}
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search courses by title, description, or instructor..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent transition-all text-base"
-              />
-            </div>
+          <div className="flex-1 w-full relative text-xs">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search courses by title, description, or instructor..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent transition-all text-base"
+            />
           </div>
 
           {/* Filter Options */}
-          <div className="flex flex-col sm:flex-row gap-4 flex-2">
+          <div className="flex flex-col w-full sm:flex-row gap-y-2 gap-x-1 md:gap-x-3 flex-2">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Filter className="inline w-4 h-4 mr-1" />
@@ -373,32 +362,28 @@ export const CourseCatalog = () => {
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-lg p-12 text-center border">
-          <div className="max-w-md mx-auto">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="w-10 h-10 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">
-              No Courses Found
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {searchTerm ||
-              selectedCategory !== "all" ||
-              selectedLevel !== "all"
-                ? "Try adjusting your search or filters"
-                : "No courses are available yet. Check back soon!"}
-            </p>
-            {(searchTerm ||
-              selectedCategory !== "all" ||
-              selectedLevel !== "all") && (
-              <button
-                onClick={handleClearFilters}
-                className="bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white font-medium px-6 py-3 rounded-lg transition-colors"
-              >
-                Clear all filters
-              </button>
-            )}
+        <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-3 md:p-12 text-center border">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Search className="w-10 h-10 text-gray-400" />
           </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            No Courses Found
+          </h3>
+          <p className="text-gray-600 mb-6">
+            {searchTerm || selectedCategory !== "all" || selectedLevel !== "all"
+              ? "Try adjusting your search or filters"
+              : "No courses are available yet. Check back soon!"}
+          </p>
+          {(searchTerm ||
+            selectedCategory !== "all" ||
+            selectedLevel !== "all") && (
+            <button
+              onClick={handleClearFilters}
+              className="bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            >
+              Clear all filters
+            </button>
+          )}
         </div>
       )}
     </div>

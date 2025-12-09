@@ -4,8 +4,8 @@ export default function Footer() {
   return (
     <>
       {/* Footer Section */}
-      <footer className="flex flex-col md:flex-row  mt-5 bg-white justify-between py-6 border-t-3 border-[#243E36FF]  px-3 md:px-6">
-        <div className="flex flex-col gap-4 items-center md:items-start md:w-1/2">
+      <footer className="flex flex-col md:flex-row  mt-5 gap-6 bg-white justify-between py-6 border-t-3 border-[#243E36FF]  px-3 md:px-6">
+        <div className="flex flex-col gap-4 items-center md:items-start md:w-1/2 text-center md:text-left">
           <h5 className="text-lg font-bold">Contact Us</h5>
           <address className="not-italic text-gray-600">
             <p>
@@ -91,7 +91,7 @@ export default function Footer() {
             </Link>
           </div>
         </div>
-        <div className="flex flex-col gap-3 justify-between">
+        <div className="flex flex-col gap-3 justify-between text-center md:text-left">
           <div className="flex flex-col items-center md:items-start md:max-w-2xl">
             <p className="text-xl font-bold mb-2">About Us</p>
             <p className="text-gray-600">
