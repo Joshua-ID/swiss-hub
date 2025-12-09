@@ -4,13 +4,13 @@ import { Users, Award, TrendingUp, NotebookTabs } from "lucide-react";
 export const Home = () => {
   return (
     <div className="flex flex-col  gap-7 md:gap-14">
-      <div className="mx-auto w-full max-w-[1440px]">
+      <div className="mx-auto w-full max-w-[1440px] p-2 sm:p-3">
         {/* Hero Section */}
         <div className="w-full text-center flex flex-col items-center justify-center gap-6 min-h-[45vh]">
-          <h1 className="text-5xl md:text-6xl font-bold ">
+          <h1 className="sm:text-4xl text-3xl md:text-6xl font-bold ">
             Join <span className="text-[#47126b] ">Swiss-Hub</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+          <p className="sm:text-xl font-medium  text-gray-600 mb-8 max-w-3xl px-2  mx-auto">
             Your comprehensive e-learning platform for online courses and
             professional development. Learn at your own pace, track your
             progress, and achieve your goals.
@@ -27,10 +27,10 @@ export const Home = () => {
 
         {/* Features Section */}
         <div className="flex flex-col gap-8">
-          <h2 className="text-4xl font-bold text-center">
+          <h2 className="sm:text-4xl text-2xl font-bold text-center">
             Why Choose Swiss-Hub?
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5">
             <div className="bg-white rounded-xl shadow-md p-6 text-center">
               <div className="bg-[#243E36FF]/8 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <NotebookTabs className="w-8 h-8 text-[#243E36FF]" />
@@ -90,7 +90,7 @@ export const Home = () => {
       <div>
         <div className=" bg-linear-to-r from-[#243E36FF] to-[#47126b]/85 shadow-xl p-12 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Ready to Start Learning?</h2>
-          <p className="text-xl mb-8 opacity-90">
+          <p className="font-medium sm:text-xl mb-8 opacity-90">
             Join thousands of learners and take the next step in your career
           </p>
           <button
