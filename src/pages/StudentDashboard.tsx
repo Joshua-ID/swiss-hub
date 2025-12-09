@@ -50,7 +50,7 @@ export const StudentDashboard = () => {
 
   return (
     <>
-      {!isOnline ? (
+      {isOnline ? (
         <div className="flex max-w-[1700px] p-3 md:p-6 mx-auto  gap-7 md:gap-14 flex-col">
           {/* Header */}
           <div className="flex items-center justify-between ">
