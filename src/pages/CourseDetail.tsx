@@ -269,7 +269,10 @@ export const CourseDetail = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>Updated {formatDate(course.updatedAt)}</span>
+                    <span>
+                      Updated{" "}
+                      {formatDate(course.updatedAt ?? new Date().toISOString())}
+                    </span>{" "}
                   </div>
                 </div>
               </div>

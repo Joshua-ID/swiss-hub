@@ -60,7 +60,7 @@ interface AppState {
     lessonId: string
   ) => Promise<Progress>;
   updateLastAccessed: (courseId: string, lessonId: string) => Promise<Progress>;
-  getCourseProgress: (courseId: string) => Promise<number>;
+  getCourseProgress: (userId: string, courseId: string) => Promise<number>;
 
   getLessonsByCourse: (courseId: string) => Lesson[];
   refreshData: () => Promise<void>;
@@ -415,7 +415,10 @@ export const useStore = create<AppState>()(
             };
           });
 
-          const completionPercentage = await get().getCourseProgress(courseId);
+          const completionPercentage = await get().getCourseProgress(
+            currentUser.id,
+            courseId
+          );
 
           set((state) => ({
             enrollments: state.enrollments.map((e) =>
@@ -455,7 +458,10 @@ export const useStore = create<AppState>()(
             ),
           }));
 
-          const completionPercentage = await get().getCourseProgress(courseId);
+          const completionPercentage = await get().getCourseProgress(
+            currentUser.id,
+            courseId
+          );
 
           set((state) => ({
             enrollments: state.enrollments.map((e) =>
@@ -501,15 +507,13 @@ export const useStore = create<AppState>()(
         }
       },
 
-      getCourseProgress: async (courseId: string) => {
+      getCourseProgress: async (courseId: string, userId?: string) => {
         const { currentUser } = get();
-        if (!currentUser) return 0;
+        const targetUserId = userId || currentUser?.id;
+        if (!targetUserId) return 0;
 
         try {
-          return await progressAPI.getCourseCompletion(
-            currentUser.id,
-            courseId
-          );
+          return await progressAPI.getCourseCompletion(targetUserId, courseId);
         } catch (error) {
           console.error("Error getting course progress:", error);
           return 0;
@@ -526,7 +530,7 @@ export const useStore = create<AppState>()(
       },
     }),
     {
-      name: "elearning-storage",
+      name: "swiss-hub",
       partialize: (state) => ({
         currentUser: state.currentUser,
       }),
