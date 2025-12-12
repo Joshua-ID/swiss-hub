@@ -92,23 +92,26 @@ export const CourseCatalog = () => {
       case "newest":
         result.sort(
           (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            (new Date(b.createdAt ?? 0).getTime() || 0) -
+            (new Date(a.createdAt ?? 0).getTime() || 0)
         );
         break;
+
       case "duration":
-        result.sort((a, b) => a.duration - b.duration);
+        result.sort((a, b) => (a.duration ?? 0) - (b.duration ?? 0));
         break;
+
       case "popularity":
-        // levels are strings like "beginner"/"intermediate"/"advanced" — compare as strings
         result.sort((a, b) => (a.level ?? "").localeCompare(b.level ?? ""));
         break;
+
       case "featured":
       default:
-        result.sort((a, b) => {
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        });
+        result.sort(
+          (a, b) =>
+            (new Date(b.createdAt ?? 0).getTime() || 0) -
+            (new Date(a.createdAt ?? 0).getTime() || 0)
+        );
     }
 
     setFilteredCourses(result);

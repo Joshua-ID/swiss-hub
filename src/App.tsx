@@ -13,13 +13,13 @@ import Footer from "./components/Footer";
 import { AdminCourses } from "./pages/AdminCourses";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { StudentDashboard } from "./pages/StudentDashboard";
-import { CourseCatalog } from "./pages/CourseCatalog";
 import { CourseDetail } from "./pages/CourseDetail";
 import { LessonView } from "./pages/LessonView";
 import { Home } from "./pages/Home";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { CourseCatalog } from "./pages/CourseCatalog";
 
 function App() {
   return (
