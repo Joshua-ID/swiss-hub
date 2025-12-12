@@ -129,7 +129,7 @@ export const LessonView = () => {
     navigate(`/lesson/${targetLessonId}`);
   };
 
-  if (isLoading || localLoading || (currentUser && !enrollmentsLoaded)) {
+  if (localLoading || (currentUser && !enrollmentsLoaded)) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <LoadingSpinner size="lg" />
