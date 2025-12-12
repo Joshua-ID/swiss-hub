@@ -13,21 +13,21 @@ import {
 } from "@/api/backend";
 
 interface AppState {
-  // Current user
   currentUser: User | null;
   isLoading: boolean;
   error: string | null;
 
-  // NEW: Track if enrollments have been loaded
   enrollmentsLoaded: boolean;
 
-  // Data - initially empty, will be fetched from Supabase
   courses: Course[];
   lessons: Lesson[];
   progress: Progress[];
   enrollments: Enrollment[];
 
-  // Actions
+  // ✅ USERS FOR ADMIN DASHBOARD
+  users: User[];
+  fetchUsers: () => Promise<void>;
+
   setCurrentUser: (user: User | null) => void;
   initializeUser: (
     clerkId: string,
@@ -36,7 +36,6 @@ interface AppState {
   ) => Promise<void>;
   logoutUser: () => Promise<void>;
 
-  // Course actions
   fetchCourses: () => Promise<void>;
   addCourse: (
     course: Omit<Course, "id" | "createdAt" | "updatedAt">
@@ -44,19 +43,16 @@ interface AppState {
   updateCourse: (courseId: string, updates: Partial<Course>) => Promise<Course>;
   deleteCourse: (courseId: string) => Promise<void>;
 
-  // Lesson actions
   fetchLessonsByCourse: (courseId: string) => Promise<Lesson[]>;
   addLesson: (lesson: Omit<Lesson, "id">) => Promise<Lesson>;
   updateLesson: (lessonId: string, updates: Partial<Lesson>) => Promise<Lesson>;
   deleteLesson: (lessonId: string) => Promise<void>;
 
-  // Enrollment actions
   fetchUserEnrollments: (userId?: string) => Promise<Enrollment[]>;
   enrollCourse: (courseId: string) => Promise<Enrollment>;
   unenrollCourse: (courseId: string) => Promise<void>;
-  isUserEnrolled: (courseId: string) => boolean; // Changed to synchronous
+  isUserEnrolled: (courseId: string) => boolean;
 
-  // Progress actions
   fetchCourseProgress: (courseId: string) => Promise<Progress[]>;
   markLessonComplete: (courseId: string, lessonId: string) => Promise<Progress>;
   markLessonIncomplete: (
@@ -64,20 +60,16 @@ interface AppState {
     lessonId: string
   ) => Promise<Progress>;
   updateLastAccessed: (courseId: string, lessonId: string) => Promise<Progress>;
-  getCourseProgress: (courseId: string, userId?: string) => Promise<number>;
+  getCourseProgress: (courseId: string) => Promise<number>;
 
-  // Utility functions
   getLessonsByCourse: (courseId: string) => Lesson[];
   refreshData: () => Promise<void>;
-
-  // NEW: Ensure enrollments are loaded
   ensureEnrollmentsLoaded: () => Promise<void>;
 }
 
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
-      // Initial state - empty arrays
       currentUser: null,
       isLoading: false,
       courses: [],
@@ -85,31 +77,44 @@ export const useStore = create<AppState>()(
       progress: [],
       enrollments: [],
       error: null,
-      enrollmentsLoaded: false, // NEW
+      enrollmentsLoaded: false,
 
-      // User actions
+      // ✅ INIT USERS ARRAY
+      users: [],
+
+      // -----------------------------------------------------
+      // USERS (ADMIN)
+      // -----------------------------------------------------
+      fetchUsers: async () => {
+        try {
+          set({ isLoading: true });
+          const users = await userAPI.getAll();
+          set({ users });
+        } catch (error) {
+          console.error("Error fetching users:", error);
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      // USER LOGIC ------------------------------------------
       setCurrentUser: (user) => set({ currentUser: user }),
 
-      // Initialize user with Clerk and fetch their data
       initializeUser: async (clerkId: string, email: string, name: string) => {
         set({ isLoading: true });
         try {
-          // Try to get existing user
           let user = await userAPI.getByClerkId(clerkId);
 
-          // If user doesn't exist, create them
           if (!user) {
             user = await userAPI.create({
-              clerkId: clerkId,
+              clerkId,
               email,
               name,
-              role: "student", // Default role
+              role: "student",
             });
           }
 
           set({ currentUser: user });
-
-          // Fetch initial data for this user
           await get().refreshData();
         } catch (error) {
           console.error("Error initializing user:", error);
@@ -119,7 +124,6 @@ export const useStore = create<AppState>()(
         }
       },
 
-      // Logout user and clear data
       logoutUser: async () => {
         set({
           currentUser: null,
@@ -127,11 +131,12 @@ export const useStore = create<AppState>()(
           lessons: [],
           progress: [],
           enrollments: [],
-          enrollmentsLoaded: false, // Reset flag
+          users: [],
+          enrollmentsLoaded: false,
         });
       },
 
-      // Refresh all data for current user
+      // REFRESH ---------------------------------------------
       refreshData: async () => {
         const { currentUser } = get();
         if (!currentUser) return;
@@ -139,14 +144,17 @@ export const useStore = create<AppState>()(
         try {
           set({ isLoading: true });
 
-          // Fetch courses (all users can see courses)
           const courses = await courseAPI.getAll();
           set({ courses });
 
-          // Fetch user-specific data
           const enrollments = await enrollmentAPI.getByUser(currentUser.id);
+          set({ enrollments, enrollmentsLoaded: true });
 
-          set({ enrollments, enrollmentsLoaded: true }); // Mark as loaded
+          // ✅ LOAD USERS ONLY IF ADMIN
+          if (currentUser.role === "admin") {
+            const users = await userAPI.getAll();
+            set({ users });
+          }
         } catch (error) {
           console.error("Error refreshing data:", error);
         } finally {
@@ -154,13 +162,12 @@ export const useStore = create<AppState>()(
         }
       },
 
-      // NEW: Ensure enrollments are loaded before checking
+      // -----------------------------------------------------
+      // ENSURE ENROLLMENTS
+      // -----------------------------------------------------
       ensureEnrollmentsLoaded: async () => {
         const { currentUser, enrollmentsLoaded } = get();
-
         if (!currentUser) return;
-
-        // If already loaded, skip
         if (enrollmentsLoaded) return;
 
         try {
@@ -171,23 +178,21 @@ export const useStore = create<AppState>()(
         }
       },
 
-      // Fetch all courses
+      // -----------------------------------------------------
+      // COURSES
+      // -----------------------------------------------------
       fetchCourses: async () => {
         set({ isLoading: true, error: null });
         try {
-          console.log("Fetching courses from Supabase...");
           const courses = await courseAPI.getAll();
-          console.log("Courses fetched:", courses.length);
           set({ courses });
         } catch (error: any) {
-          console.error("Error fetching courses:", error);
           set({ error: error.message });
         } finally {
           set({ isLoading: false });
         }
       },
 
-      // Course actions
       addCourse: async (course) => {
         set({ isLoading: true });
         try {
@@ -196,9 +201,6 @@ export const useStore = create<AppState>()(
             courses: [...state.courses, newCourse],
           }));
           return newCourse;
-        } catch (error) {
-          console.error("Error creating course:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -214,9 +216,6 @@ export const useStore = create<AppState>()(
             ),
           }));
           return updatedCourse;
-        } catch (error) {
-          console.error("Error updating course:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -234,20 +233,18 @@ export const useStore = create<AppState>()(
             ),
             progress: state.progress.filter((p) => p.courseId !== courseId),
           }));
-        } catch (error) {
-          console.error("Error deleting course:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
       },
 
-      // Lesson actions
+      // -----------------------------------------------------
+      // LESSONS
+      // -----------------------------------------------------
       fetchLessonsByCourse: async (courseId: string) => {
         set({ isLoading: true });
         try {
           const lessons = await lessonAPI.getByCourse(courseId);
-          // Update lessons in state
           set((state) => ({
             lessons: [
               ...state.lessons.filter((l) => l.courseId !== courseId),
@@ -255,9 +252,6 @@ export const useStore = create<AppState>()(
             ],
           }));
           return lessons;
-        } catch (error) {
-          console.error("Error fetching lessons:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -271,9 +265,6 @@ export const useStore = create<AppState>()(
             lessons: [...state.lessons, newLesson],
           }));
           return newLesson;
-        } catch (error) {
-          console.error("Error creating lesson:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -289,9 +280,6 @@ export const useStore = create<AppState>()(
             ),
           }));
           return updatedLesson;
-        } catch (error) {
-          console.error("Error updating lesson:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -305,29 +293,24 @@ export const useStore = create<AppState>()(
             lessons: state.lessons.filter((l) => l.id !== lessonId),
             progress: state.progress.filter((p) => p.lessonId !== lessonId),
           }));
-        } catch (error) {
-          console.error("Error deleting lesson:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
       },
 
-      // Enrollment actions
+      // -----------------------------------------------------
+      // ENROLLMENTS
+      // -----------------------------------------------------
       fetchUserEnrollments: async (userId?: string) => {
         const { currentUser } = get();
         const targetUserId = userId || currentUser?.id;
-
         if (!targetUserId) return [];
 
         set({ isLoading: true });
         try {
           const enrollments = await enrollmentAPI.getByUser(targetUserId);
-          set({ enrollments, enrollmentsLoaded: true }); // Mark as loaded
+          set({ enrollments, enrollmentsLoaded: true });
           return enrollments;
-        } catch (error) {
-          console.error("Error fetching enrollments:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -347,9 +330,6 @@ export const useStore = create<AppState>()(
             enrollments: [...state.enrollments, enrollment],
           }));
           return enrollment;
-        } catch (error) {
-          console.error("Error enrolling in course:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -370,15 +350,11 @@ export const useStore = create<AppState>()(
               (p) => !(p.userId === currentUser.id && p.courseId === courseId)
             ),
           }));
-        } catch (error) {
-          console.error("Error unenrolling from course:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
       },
 
-      // CHANGED: Now synchronous - checks enrollments array directly
       isUserEnrolled: (courseId: string) => {
         const { currentUser, enrollments } = get();
         if (!currentUser) return false;
@@ -388,7 +364,9 @@ export const useStore = create<AppState>()(
         );
       },
 
-      // Progress actions
+      // -----------------------------------------------------
+      // PROGRESS
+      // -----------------------------------------------------
       fetchCourseProgress: async (courseId: string) => {
         const { currentUser } = get();
         if (!currentUser) return [];
@@ -399,7 +377,6 @@ export const useStore = create<AppState>()(
             currentUser.id,
             courseId
           );
-          // Update progress in state for this course
           set((state) => ({
             progress: [
               ...state.progress.filter(
@@ -409,9 +386,6 @@ export const useStore = create<AppState>()(
             ],
           }));
           return progress;
-        } catch (error) {
-          console.error("Error fetching progress:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -430,26 +404,19 @@ export const useStore = create<AppState>()(
             true
           );
 
-          // Update progress in state
           set((state) => {
-            const existingProgress = state.progress.find(
-              (p) => p.id === progress.id
-            );
-            if (existingProgress) {
-              return {
-                progress: state.progress.map((p) =>
-                  p.id === progress.id ? progress : p
-                ),
-              };
-            } else {
-              return {
-                progress: [...state.progress, progress],
-              };
-            }
+            const exists = state.progress.find((p) => p.id === progress.id);
+            return {
+              progress: exists
+                ? state.progress.map((p) =>
+                    p.id === progress.id ? progress : p
+                  )
+                : [...state.progress, progress],
+            };
           });
 
-          // Update enrollment completion percentage
           const completionPercentage = await get().getCourseProgress(courseId);
+
           set((state) => ({
             enrollments: state.enrollments.map((e) =>
               e.userId === currentUser.id && e.courseId === courseId
@@ -464,9 +431,6 @@ export const useStore = create<AppState>()(
           }));
 
           return progress;
-        } catch (error) {
-          console.error("Error marking lesson complete:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -485,31 +449,23 @@ export const useStore = create<AppState>()(
             false
           );
 
-          // Update progress in state
           set((state) => ({
             progress: state.progress.map((p) =>
               p.id === progress.id ? progress : p
             ),
           }));
 
-          // Update enrollment completion percentage
           const completionPercentage = await get().getCourseProgress(courseId);
+
           set((state) => ({
             enrollments: state.enrollments.map((e) =>
               e.userId === currentUser.id && e.courseId === courseId
-                ? {
-                    ...e,
-                    completionPercentage,
-                    status: "active",
-                  }
+                ? { ...e, completionPercentage, status: "active" }
                 : e
             ),
           }));
 
           return progress;
-        } catch (error) {
-          console.error("Error marking lesson incomplete:", error);
-          throw error;
         } finally {
           set({ isLoading: false });
         }
@@ -524,25 +480,18 @@ export const useStore = create<AppState>()(
             currentUser.id,
             courseId,
             lessonId,
-            false // Not completed, just accessed
+            false
           );
 
-          // Update progress in state
           set((state) => {
-            const existingProgress = state.progress.find(
-              (p) => p.id === progress.id
-            );
-            if (existingProgress) {
-              return {
-                progress: state.progress.map((p) =>
-                  p.id === progress.id ? progress : p
-                ),
-              };
-            } else {
-              return {
-                progress: [...state.progress, progress],
-              };
-            }
+            const exists = state.progress.find((p) => p.id === progress.id);
+            return {
+              progress: exists
+                ? state.progress.map((p) =>
+                    p.id === progress.id ? progress : p
+                  )
+                : [...state.progress, progress],
+            };
           });
 
           return progress;
@@ -567,7 +516,9 @@ export const useStore = create<AppState>()(
         }
       },
 
-      // Utility functions
+      // -----------------------------------------------------
+      // UTILITIES
+      // -----------------------------------------------------
       getLessonsByCourse: (courseId: string) => {
         return get()
           .lessons.filter((l) => l.courseId === courseId)
@@ -577,7 +528,6 @@ export const useStore = create<AppState>()(
     {
       name: "elearning-storage",
       partialize: (state) => ({
-        // Only persist the current user
         currentUser: state.currentUser,
       }),
     }

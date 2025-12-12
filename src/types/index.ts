@@ -6,20 +6,6 @@ export interface User {
   createdAt?: string;
 }
 
-// export interface Course {
-//   id: string;
-//   title: string;
-//   description: string;
-//   thumbnail: string;
-//   category: string;
-//   prerequisites?: string[]; // Array of course IDs
-//   duration?: number | string; // in hours
-//   level: "beginner" | "intermediate" | "advanced";
-//   createdBy?: string; // Admin user ID
-//   createdAt?: string;
-//   updatedAt?: string;
-// }
-
 export interface Course {
   id: string;
   title: string;
@@ -30,8 +16,8 @@ export interface Course {
   duration: number;
   level: "beginner" | "intermediate" | "advanced";
   createdBy: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 
   // Add these optional properties to match Supabase data
   instructor?: string;
@@ -69,14 +55,14 @@ export interface Progress {
   lessonId: string;
   completed: boolean;
   completedAt?: string;
-  lastAccessedAt: string;
+  lastAccessedAt?: string;
 }
 
 export interface Enrollment {
   id: string;
   userId: string;
   courseId: string;
-  enrolledAt: string;
+  enrolledAt?: string;
   status: "active" | "completed" | "dropped";
   completionPercentage: number;
 }
@@ -85,8 +71,4 @@ export interface CourseWithProgress extends Course {
   totalLessons: number;
   completedLessons: number;
   enrollmentStatus?: "enrolled" | "not-enrolled" | "locked";
-}
-
-export interface altRole {
-  role: "admin" | "student";
 }

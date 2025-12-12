@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // utils/typeMapper.ts
-// Converts between Supabase database types and your app types
 
 import type { Database } from "@/types/database";
 import type {
@@ -18,18 +17,24 @@ type DbLesson = Database["public"]["Tables"]["lessons"]["Row"];
 type DbEnrollment = Database["public"]["Tables"]["enrollments"]["Row"];
 type DbProgress = Database["public"]["Tables"]["progress"]["Row"];
 
-// User mappers
+// Enums for app domain
+export type UserRole = "admin" | "student";
+export type CourseLevel = "beginner" | "intermediate" | "advanced";
+export type EnrollmentStatus = "active" | "completed" | "dropped";
+export type LessonType = "video" | "reading" | "quiz";
+
+// ---------------- USER ----------------
 export function mapDbUserToApp(dbUser: DbUser): User {
   return {
     id: dbUser.id,
     name: dbUser.name,
     email: dbUser.email,
-    role: dbUser.role,
-    createdAt: dbUser.created_at,
+    role: dbUser.role as UserRole,
+    createdAt: dbUser.created_at ?? undefined,
   };
 }
 
-// Course mappers
+// ---------------- COURSE ----------------
 export function mapDbCourseToApp(dbCourse: DbCourse): Course {
   return {
     id: dbCourse.id,
@@ -37,12 +42,12 @@ export function mapDbCourseToApp(dbCourse: DbCourse): Course {
     description: dbCourse.description,
     thumbnail: dbCourse.thumbnail,
     category: dbCourse.category,
-    prerequisites: dbCourse.prerequisites || [], // Array from DB
-    duration: Number(dbCourse.duration) || 0, // Convert string to number
-    level: dbCourse.level,
-    createdBy: dbCourse.instructor, // Map instructor to createdBy
-    createdAt: dbCourse.created_at,
-    updatedAt: dbCourse.updated_at,
+    prerequisites: dbCourse.prerequisites ?? [],
+    duration: Number(dbCourse.duration) || 0,
+    level: dbCourse.level as CourseLevel,
+    createdBy: dbCourse.instructor,
+    createdAt: dbCourse.created_at ?? undefined,
+    updatedAt: dbCourse.updated_at ?? undefined,
   };
 }
 
@@ -54,14 +59,14 @@ export function mapAppCourseToDb(
     description: course.description,
     thumbnail: course.thumbnail,
     category: course.category,
-    prerequisites: course.prerequisites || [],
-    duration: String(course.duration ?? 0), // Convert number to string
+    prerequisites: course.prerequisites,
+    duration: String(course.duration),
     level: course.level,
-    instructor: course.createdBy || "", // Map createdBy to instructor
+    instructor: course.createdBy,
   };
 }
 
-// Lesson mappers
+// ---------------- LESSON ----------------
 export function mapDbLessonToApp(dbLesson: DbLesson): Lesson {
   return {
     id: dbLesson.id,
@@ -70,9 +75,9 @@ export function mapDbLessonToApp(dbLesson: DbLesson): Lesson {
     description: dbLesson.description,
     order: dbLesson.order_num,
     videoUrl: dbLesson.video_url,
-    materials: (dbLesson.materials as any as Material[]) || [], // Parse JSONB
-    duration: Number(dbLesson.duration) || 0, // Convert string to number
-    type: dbLesson.type,
+    materials: (dbLesson.materials as any as Material[]) ?? [],
+    duration: Number(dbLesson.duration) || 0,
+    type: dbLesson.type as LessonType,
   };
 }
 
@@ -85,36 +90,35 @@ export function mapAppLessonToDb(
     description: lesson.description,
     order_num: lesson.order,
     video_url: lesson.videoUrl,
-    materials: lesson.materials as any, // Convert to JSONB
-    duration: String(lesson.duration ?? 0), // Convert number to string
+    materials: lesson.materials as any,
+    duration: String(lesson.duration),
     type: lesson.type,
   };
 }
 
-// Enrollment mappers
+// ---------------- ENROLLMENT ----------------
 export function mapDbEnrollmentToApp(dbEnrollment: DbEnrollment): Enrollment {
   return {
     id: dbEnrollment.id,
     userId: dbEnrollment.user_id,
     courseId: dbEnrollment.course_id,
-    enrolledAt: dbEnrollment.enrolled_at,
-    // Map "cancelled" to "dropped" for app types
+    enrolledAt: dbEnrollment.enrolled_at ?? undefined,
     status: (dbEnrollment.status === "cancelled"
       ? "dropped"
-      : dbEnrollment.status) as Enrollment["status"],
-    completionPercentage: dbEnrollment.completion_percentage,
+      : dbEnrollment.status) as EnrollmentStatus,
+    completionPercentage: dbEnrollment.completion_percentage ?? 0,
   };
 }
 
-// Progress mappers
+// ---------------- PROGRESS ----------------
 export function mapDbProgressToApp(dbProgress: DbProgress): Progress {
   return {
     id: dbProgress.id,
     userId: dbProgress.user_id,
     courseId: dbProgress.course_id,
     lessonId: dbProgress.lesson_id,
-    completed: dbProgress.completed,
-    completedAt: dbProgress.completed_at || undefined,
-    lastAccessedAt: dbProgress.last_accessed_at,
+    completed: dbProgress.completed ?? false,
+    completedAt: dbProgress.completed_at ?? undefined,
+    lastAccessedAt: dbProgress.last_accessed_at ?? undefined,
   };
 }

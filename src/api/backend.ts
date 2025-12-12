@@ -78,6 +78,19 @@ export const userAPI = {
 
     return mapDbUserToApp(data);
   },
+
+  async getAll(): Promise<User[]> {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw new Error("Failed to fetch users: " + error.message);
+    }
+
+    return (data || []).map(mapDbUserToApp);
+  },
 };
 
 // Course API
