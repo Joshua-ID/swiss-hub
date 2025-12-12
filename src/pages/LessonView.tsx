@@ -27,7 +27,7 @@ export const LessonView = () => {
     updateLastAccessed,
     getLessonsByCourse,
     progress: allProgress,
-    isLoading,
+    // isLoading,
     ensureEnrollmentsLoaded,
     enrollmentsLoaded,
   } = useStore();

@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import CourseCard from "../components/CourseCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import type { Course } from "@/types";
+import { useClerk } from "@clerk/clerk-react";
 
 export const CourseCatalog = () => {
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ export const CourseCatalog = () => {
     ensureEnrollmentsLoaded,
     enrollmentsLoaded,
   } = useStore();
+
+  const { openSignIn } = useClerk();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -118,9 +121,8 @@ export const CourseCatalog = () => {
   }, [courses, searchTerm, selectedCategory, selectedLevel, sortBy]);
 
   const handleEnroll = async (courseId: string) => {
-    if (!currentUser) {
-      // Redirect to sign in
-      navigate(`/sign-in?redirect=/catalog`);
+    if (!currentUser || !courseId) {
+      openSignIn({ redirectUrl: "/sign-in?redirect=/catalog" });
       return;
     }
 

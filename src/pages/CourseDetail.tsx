@@ -16,6 +16,7 @@ import ProgressBadge from "../components/ProgressBadge";
 import { useEffect, useState } from "react";
 import LoadingSpinner from "../components/LoadingSpinner";
 import type { Course, Lesson } from "@/types";
+import { useClerk } from "@clerk/clerk-react";
 
 export const CourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -40,6 +41,8 @@ export const CourseDetail = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [courseProgress, setCourseProgress] = useState(0);
   const [localLoading, setLocalLoading] = useState(true);
+
+  const { openSignIn } = useClerk();
 
   useEffect(() => {
     const loadCourseData = async () => {
@@ -86,7 +89,10 @@ export const CourseDetail = () => {
 
   const handleEnroll = async () => {
     if (!currentUser || !courseId) {
-      navigate(`/sign-in?redirect=/course/${courseId}`);
+      openSignIn({
+        redirectUrl: `/course/${courseId}`,
+      });
+
       return;
     }
 
