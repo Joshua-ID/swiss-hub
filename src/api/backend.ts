@@ -5,7 +5,6 @@
  */
 
 import { supabase } from "@/lib/supabase";
-import type { Database } from "@/types/database";
 import type { User, Course, Lesson, Enrollment, Progress } from "@/types";
 import {
   mapDbUserToApp,
@@ -16,8 +15,6 @@ import {
   mapAppCourseToDb,
   mapAppLessonToDb,
 } from "@/utils/typeMapper";
-
-type Tables = Database["public"]["Tables"];
 
 // User API
 export const userAPI = {
@@ -38,7 +35,6 @@ export const userAPI = {
   },
 
   // Create user (called after Clerk signup)
-  // Create user (called after Clerk signup) - FIXED
   async create(userData: {
     clerkId: string;
     email: string;
@@ -47,7 +43,7 @@ export const userAPI = {
   }): Promise<User> {
     // Map from camelCase to snake_case
     const dbUserData = {
-      clerk_id: userData.clerkId, // Convert to snake_case
+      clerk_id: userData.clerkId,
       email: userData.email,
       name: userData.name,
       role: userData.role,

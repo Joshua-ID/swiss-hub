@@ -86,3 +86,7 @@ export interface CourseWithProgress extends Course {
   completedLessons: number;
   enrollmentStatus?: "enrolled" | "not-enrolled" | "locked";
 }
+
+export interface altRole {
+  role: "admin" | "student";
+}
