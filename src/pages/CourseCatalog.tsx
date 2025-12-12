@@ -230,7 +230,7 @@ export const CourseCatalog = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="bg-white rounded-xl shadow-lg md:p-6 p-3 mb-8 sticky top-3 md:top-14 z-10 border">
+      <div className="bg-white rounded-xl shadow-lg md:p-6 p-3 mb-8 sticky sm:static sm:top-3 md:top-14 z-10 border">
         <div className="flex flex-col-reverse sm:flex-col  lg:flex-row gap-3 md:gap-4 justify-end items-end">
           {/* Search Bar */}
           <div className="flex-1 w-full relative text-xs">

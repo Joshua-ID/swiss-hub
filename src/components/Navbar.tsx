@@ -34,7 +34,7 @@ export const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white w-[calc(100vw-1rem)] py-2 sm:py-4 shadow-md sticky top-0 z-40 px-3 md:px-5 flex justify-between items-center gap-2 md:p-2">
+    <nav className="bg-white sm:w-[calc(100vw-1rem)] z-50  py-2 sm:py-4 shadow-md sticky top-0  px-3 md:px-5 flex justify-between items-center gap-2 md:p-2">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 flex-wrap">
         <img src="/logo.png" alt="Swiss-Hub" className="w-10 h-10" />
