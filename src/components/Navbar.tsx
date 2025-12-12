@@ -7,7 +7,7 @@ import { useEffect } from "react";
 export const Navbar = () => {
   const location = useLocation();
   const { user, isLoaded } = useUser();
-  const { currentUser, initializeUser } = useStore();
+  const { currentUser, initializeUser, logoutUser } = useStore();
 
   // Initialize user in Supabase when Clerk user loads
   useEffect(() => {
@@ -19,6 +19,16 @@ export const Navbar = () => {
       initializeUser(user.id, email, name);
     }
   }, [isLoaded, user, currentUser, initializeUser]);
+
+  // Detect when user signs out and clear storage
+  useEffect(() => {
+    if (isLoaded && !user && currentUser) {
+      // User was logged in but now is logged out
+      logoutUser();
+      localStorage.clear();
+      sessionStorage.clear();
+    }
+  }, [isLoaded, user, currentUser, logoutUser]);
 
   const isAdmin = currentUser?.role === "admin";
   const isActive = (path: string) => location.pathname === path;

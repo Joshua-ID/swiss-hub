@@ -16,8 +16,6 @@ import { StudentDashboard } from "./pages/StudentDashboard";
 import { CourseDetail } from "./pages/CourseDetail";
 import { LessonView } from "./pages/LessonView";
 import { Home } from "./pages/Home";
-import SignInPage from "./pages/SignInPage";
-import SignUpPage from "./pages/SignUpPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { CourseCatalog } from "./pages/CourseCatalog";
 
@@ -30,8 +28,6 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
-            <Route path="/sign-in" element={<SignInPage />} />
-            <Route path="/sign-up" element={<SignUpPage />} />
 
             {/* Course and Lesson Routes (Public view, but some features require auth) */}
             <Route path="/catalog" element={<CourseCatalog />} />
