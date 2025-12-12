@@ -60,7 +60,7 @@ export const CourseCatalog = () => {
     };
 
     loadData();
-  }, [fetchCourses, ensureEnrollmentsLoaded, currentUser?.id]);
+  }, [fetchCourses, ensureEnrollmentsLoaded, currentUser]);
 
   useEffect(() => {
     let result = [...courses];

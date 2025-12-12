@@ -29,7 +29,7 @@ interface AppState {
     markLessonComplete: (courseId: string, lessonId: string) => Promise<Progress>;
     markLessonIncomplete: (courseId: string, lessonId: string) => Promise<Progress>;
     updateLastAccessed: (courseId: string, lessonId: string) => Promise<Progress>;
-    getCourseProgress: (courseId: string) => Promise<number>;
+    getCourseProgress: (userId: string, courseId: string) => Promise<number>;
     getLessonsByCourse: (courseId: string) => Lesson[];
     refreshData: () => Promise<void>;
     ensureEnrollmentsLoaded: () => Promise<void>;

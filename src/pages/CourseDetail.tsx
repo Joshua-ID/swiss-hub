@@ -71,7 +71,7 @@ export const CourseDetail = () => {
         const enrolled = isUserEnrolled(courseId);
         if (enrolled && currentUser) {
           await fetchCourseProgress(courseId);
-          const progress = await getCourseProgress(courseId);
+          const progress = await getCourseProgress(currentUser.id, courseId);
           setCourseProgress(progress);
         }
       } catch (error) {
@@ -94,7 +94,7 @@ export const CourseDetail = () => {
       await enrollCourse(courseId);
 
       // Refresh progress after enrollment
-      const progress = await getCourseProgress(courseId);
+      const progress = await getCourseProgress(currentUser.id, courseId);
       setCourseProgress(progress);
     } catch (error: any) {
       console.error("Error enrolling:", error);
