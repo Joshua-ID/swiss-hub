@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useStore } from "../store/useStore";
 import ProgressBadge from "../components/ProgressBadge";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import LoadingSpinner from "../components/LoadingSpinner";
 import type { Course, Lesson } from "@/types";
 import { useClerk } from "@clerk/clerk-react";
@@ -28,7 +28,7 @@ export const CourseDetail = () => {
     fetchLessonsByCourse,
     fetchCourseProgress,
     enrollCourse,
-    getCourseProgress,
+
     isLoading,
     isUserEnrolled,
     // enrollments,
@@ -39,7 +39,6 @@ export const CourseDetail = () => {
 
   const [course, setCourse] = useState<Course | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [courseProgress, setCourseProgress] = useState(0);
   const [localLoading, setLocalLoading] = useState(true);
 
   const { openSignIn } = useClerk();
@@ -74,8 +73,6 @@ export const CourseDetail = () => {
         const enrolled = isUserEnrolled(courseId);
         if (enrolled && currentUser) {
           await fetchCourseProgress(courseId);
-          const progress = await getCourseProgress(currentUser.id, courseId);
-          setCourseProgress(progress);
         }
       } catch (error) {
         console.error("Error loading course data:", error);
@@ -86,6 +83,17 @@ export const CourseDetail = () => {
 
     loadCourseData();
   }, [courseId, courses.length, currentUser, enrollmentsLoaded]);
+
+  const courseProgress = useMemo(() => {
+    if (!currentUser || lessons.length === 0) return 0;
+
+    const completedLessons = allProgress.filter(
+      (p) =>
+        p.userId === currentUser.id && p.courseId === courseId && p.completed
+    ).length;
+
+    return Math.round((completedLessons / lessons.length) * 100);
+  }, [allProgress, lessons, currentUser, courseId]);
 
   const handleEnroll = async () => {
     if (!currentUser || !courseId) {
@@ -98,10 +106,6 @@ export const CourseDetail = () => {
 
     try {
       await enrollCourse(courseId);
-
-      // Refresh progress after enrollment
-      const progress = await getCourseProgress(currentUser.id, courseId);
-      setCourseProgress(progress);
     } catch (error: any) {
       console.error("Error enrolling:", error);
 
@@ -201,7 +205,7 @@ export const CourseDetail = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-1 md:px-4 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-600 mb-6">
         <button
@@ -235,10 +239,10 @@ export const CourseDetail = () => {
           )}
           <div className="absolute inset-0 bg-black/20" />
 
-          <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-              <div className="max-w-3xl">
-                <div className="flex flex-wrap items-center gap-3 mb-4">
+          <div className="absolute -bottom-3 left-0 right-0  px-4 md:px-8 py-8 text-white">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-1 md:gap-3">
+              <div className="max-w-3xl flex flex-col md:gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
                     {course.category}
                   </span>
@@ -255,12 +259,14 @@ export const CourseDetail = () => {
                       course.level.slice(1)}
                   </span>
                 </div>
-                <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
-                <p className="text-lg text-white/90 mb-6">
+                <h1 className="sm:text-2xl md:text-3xl font-bold mt-2">
+                  {course.title}
+                </h1>
+                <p className="sm:text-lg sm:flex hidden  text-white/90">
                   {course.description}
                 </p>
 
-                <div className="flex flex-wrap gap-6 text-sm">
+                <div className="text-xs md:text-sm flex flex-wrap gap-y-2 gap-x-6 my-3">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     <span>By {course.createdBy}</span>
@@ -273,7 +279,7 @@ export const CourseDetail = () => {
                     <PlayCircle className="w-4 h-4" />
                     <span>{lessons.length} lessons</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-xs md:text-sm">
                     <Calendar className="w-4 h-4" />
                     <span>
                       Updated{" "}
@@ -283,7 +289,7 @@ export const CourseDetail = () => {
                 </div>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 min-w-[280px]">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl lg:p-6 p-3 min-w-[280px]">
                 {enrolled ? (
                   <div className="space-y-4">
                     <div className="text-center">
@@ -326,11 +332,11 @@ export const CourseDetail = () => {
       </div>
 
       {/* Course Content */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
         {/* Lessons Section */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-md p-8">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl shadow-md p-2 sm:p-4 lg:p-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap">
               <h2 className="text-2xl font-bold text-gray-900">
                 Course Content
               </h2>
@@ -341,7 +347,7 @@ export const CourseDetail = () => {
 
             {lessons.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <FileText className="w-16 h-16 mx-auto text-gray-300" />
                 <p className="text-gray-500 mb-2">No lessons available yet</p>
                 <p className="text-sm text-gray-400">
                   Check back later or contact the instructor
@@ -358,13 +364,13 @@ export const CourseDetail = () => {
                     <div
                       key={lesson.id}
                       onClick={() => !isLocked && handleLessonClick(lesson.id)}
-                      className={`border border-gray-200 rounded-lg p-5 transition-all ${
+                      className={`border border-gray-200 rounded-lg p-2.5 sm:p-5 transition-all ${
                         isLocked
                           ? "bg-gray-50 cursor-not-allowed opacity-75"
                           : "hover:border-[#243E36FF]/50 hover:shadow-md cursor-pointer"
                       } ${isCompleted ? "bg-green-50 border-green-200" : ""}`}
                     >
-                      <div className="flex items-start gap-4">
+                      <div className="flex sm:flex-row flex-col items-start gap-2  md:gap-4">
                         <div
                           className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
                             isCompleted
@@ -464,11 +470,11 @@ export const CourseDetail = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Instructor Info */}
-          <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="bg-white rounded-xl shadow-md p-2 sm:p-3 lg:p-4">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Instructor</h3>
-            <div className="flex items-start gap-4">
-              <div className="w-16 h-16 bg-[#243E36FF]/10 rounded-full flex items-center justify-center">
-                <Users className="w-8 h-8 text-[#243E36FF]" />
+            <div className="flex items-start gap-2 sm:gap-3">
+              <div className="bg-[#243E36FF]/10 rounded-full p-2 flex items-center justify-center">
+                <Users className=" text-[#243E36FF]" />
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900">
@@ -482,7 +488,7 @@ export const CourseDetail = () => {
           </div>
 
           {/* Requirements */}
-          <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="bg-white rounded-xl shadow-md p-2 sm:p-3 lg:p-4">
             <h3 className="text-lg font-bold text-gray-900 mb-4">
               Requirements
             </h3>

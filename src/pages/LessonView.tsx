@@ -165,6 +165,7 @@ export const LessonView = () => {
   const currentIndex = courseLessons.findIndex((l) => l.id === lessonId);
   const previousLesson =
     currentIndex > 0 ? courseLessons[currentIndex - 1] : null;
+
   const nextLesson =
     currentIndex < courseLessons.length - 1
       ? courseLessons[currentIndex + 1]
@@ -176,6 +177,8 @@ export const LessonView = () => {
       p.courseId === lesson.courseId &&
       p.completed
   ).length;
+
+  const canGoNext = isCompleted && !!nextLesson;
 
   return (
     <div className="min-h-screen max-w-[1700px] bg-gray-50">
@@ -226,8 +229,8 @@ export const LessonView = () => {
 
             {/* Video Player */}
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="aspect-video bg-black">
-                {lesson.videoUrl ? (
+              {lesson.videoUrl && (
+                <div className="aspect-video bg-black">
                   <iframe
                     width="100%"
                     height="100%"
@@ -237,15 +240,8 @@ export const LessonView = () => {
                     referrerPolicy="strict-origin-when-cross-origin"
                     allowFullScreen
                   ></iframe>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    <div className="text-center">
-                      <FileText className="w-16 h-16 mx-auto mb-4" />
-                      <p>No video available</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Lesson Info */}
@@ -302,12 +298,17 @@ export const LessonView = () => {
                 <span className="hidden sm:inline">Previous Lesson</span>
                 <span className="sm:hidden">Previous</span>
               </button>
+              {nextLesson && !isCompleted && (
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  Complete this lesson to unlock the next one
+                </p>
+              )}
 
               <button
-                onClick={() => nextLesson && handleNavigate(nextLesson.id)}
-                disabled={!nextLesson}
+                onClick={() => canGoNext && handleNavigate(nextLesson.id)}
+                disabled={!canGoNext}
                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
-                  nextLesson
+                  canGoNext
                     ? "bg-[#243E36FF] text-white hover:bg-[#243E36FF]/85"
                     : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 }`}

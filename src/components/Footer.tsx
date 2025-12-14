@@ -26,7 +26,7 @@ export default function Footer() {
           </address>
           <div className="flex gap-3 items-center" aria-label="Social links">
             <Link
-              to="https://wa.me/2348093223489"
+              to="https://whatsapp.com/channel/0029Vb6XbGR4yltMPojcA11o"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -41,7 +41,7 @@ export default function Footer() {
               </svg>{" "}
             </Link>
             <Link
-              to="https://twitter.com/intent/tweet?text=Check%20out%20Swiss-Hub%20https://swisshub.com"
+              to="https://twitter.com/j_joseph69"
               target="_blank"
               rel="noopener noreferrer"
             >
