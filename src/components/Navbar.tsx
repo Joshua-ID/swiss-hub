@@ -33,11 +33,25 @@ export const Navbar = () => {
   const isAdmin = currentUser?.role === "admin";
   const isActive = (path: string) => location.pathname === path;
 
+  const isChristmasSeason = () => {
+    const now = new Date();
+    const month = now.getMonth();
+    return month === 11;
+  };
+
   return (
     <nav className="bg-white sm:w-[calc(100vw-1rem)] z-50  py-2 sm:py-4 shadow-md sticky top-0  px-3 md:px-5 flex justify-between items-center gap-2 md:p-2">
       {/* Logo */}
-      <Link to="/" className="flex items-center gap-2 flex-wrap">
-        <img src="/logo.png" alt="Swiss-Hub" className="w-10 h-10" />
+      {/* relative w-10 h-10 */}
+      <Link to="/" className="  flex items-center gap-2 flex-wrap">
+        {isChristmasSeason() && (
+          <img
+            src="/santa-hat.png"
+            alt="Santa Hat"
+            className="absolute -top-2 left-0 md:left-2 w-14 h-12 z-10 rotate-x-12 pointer-events-none"
+          />
+        )}
+        <img src="/logo.png" alt="Swiss-Hub" className="relative w-10 h-10" />
         <span
           className="text-2xl text-[#243E36FF] font-extrabold whitespace-nowrap hidden sm:flex"
           style={{ fontFamily: "var(--font-design)" }}
