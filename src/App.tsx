@@ -28,7 +28,7 @@ function App() {
         <main className="grow">
           <Routes>
             {/* Public route - Waitlist page */}
-            <Route path="/join-wishlist" element={<WaitlistPage />} />
+            <Route path="/join-waitlist" element={<WaitlistPage />} />
 
             {/* Public Routes */}
             <Route path="/" element={<Home />} />

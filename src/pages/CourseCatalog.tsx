@@ -122,6 +122,10 @@ export const CourseCatalog = () => {
 
   const handleEnroll = async (courseId: string) => {
     if (!currentUser || !courseId) {
+      if (import.meta.env.PROD) {
+        navigate("/join-waitlist?redirect=/catalog");
+        return;
+      }
       openSignIn({ redirectUrl: "/sign-in?redirect=/catalog" });
       return;
     }

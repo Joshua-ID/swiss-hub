@@ -139,7 +139,7 @@ export const Navbar = () => {
                 </SignInButton>
               ) : (
                 <Link
-                  to="/join-wishlist"
+                  to="/join-waitlist"
                   className="text-[#243E36FF] hover:text-[#243E36FF]/80 text-sm font-medium transition-colors"
                 >
                   Join Waitlist
