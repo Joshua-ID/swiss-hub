@@ -1,14 +1,10 @@
 import { useStore } from "@/store/useStore";
 import { Waitlist } from "@clerk/clerk-react";
 import { GraduationCap, BookOpen, Trophy, Users } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 export const WaitlistPage = () => {
-  const [searchParams] = useSearchParams();
-  const redirectUrl = searchParams.get("redirect") || "/dashboard";
-
   const { courses, users, fetchCourses, fetchUsers, isLoading } = useStore();
   const [localLoading, setLocalLoading] = useState(true);
 
@@ -119,7 +115,7 @@ export const WaitlistPage = () => {
           <div className="order-first lg:order-last sm:bg-white sm:rounded-2xl sm:shadow-xl sm:p-8 sm:border sm:border-gray-100">
             {/* Clerk Waitlist Component */}
             <div className="flex justify-center min-h-96 ">
-              <Waitlist afterJoinWaitlistUrl={redirectUrl} />
+              <Waitlist />
             </div>
 
             {/* Stats - Updated with actual data */}
@@ -132,7 +128,7 @@ export const WaitlistPage = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-[#243E36FF]">
-                  {/* {users.length} */} 15+
+                  {users.length + 15}
                 </p>
                 <p className="text-xs text-gray-600">Users Registered</p>
               </div>
