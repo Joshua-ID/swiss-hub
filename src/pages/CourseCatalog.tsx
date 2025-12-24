@@ -8,6 +8,7 @@ import {
   GalleryVerticalEnd,
   ReplaceAll,
   ClipboardCopy,
+  ChevronDown,
 } from "lucide-react";
 import { useStore } from "../store/useStore";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +16,7 @@ import CourseCard from "../components/CourseCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import type { Course } from "@/types";
 import { useClerk } from "@clerk/clerk-react";
+import { Listbox } from "@headlessui/react";
 
 export const CourseCatalog = () => {
   const navigate = useNavigate();
@@ -257,50 +259,141 @@ export const CourseCatalog = () => {
                 <Filter className="inline w-4 h-4 mr-1" />
                 Category
               </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent bg-white"
-              >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category === "all" ? "All Categories" : category}
-                  </option>
-                ))}
-              </select>
+              <Listbox value={selectedCategory} onChange={setSelectedCategory}>
+                <div className="relative">
+                  <Listbox.Button className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent bg-white text-left flex items-center justify-between">
+                    <span>
+                      {selectedCategory === "all"
+                        ? "All Categories"
+                        : selectedCategory}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </Listbox.Button>
+
+                  <Listbox.Options className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                    {categories.map((category) => (
+                      <Listbox.Option
+                        key={category}
+                        value={category}
+                        className={({ active, selected }) =>
+                          `cursor-pointer select-none relative py-2.5 px-4 ${
+                            active
+                              ? "bg-[#243E36FF]/10 text-[#243E36FF]"
+                              : "text-gray-900"
+                          } ${
+                            selected
+                              ? "font-semibold bg-[#243E36FF]/5"
+                              : "font-normal"
+                          }`
+                        }
+                      >
+                        {({ selected }) => (
+                          <span
+                            className={`block truncate ${
+                              selected ? "font-semibold" : "font-normal"
+                            }`}
+                          >
+                            {category === "all" ? "All Categories" : category}
+                          </span>
+                        )}
+                      </Listbox.Option>
+                    ))}
+                  </Listbox.Options>
+                </div>
+              </Listbox>
             </div>
 
+            {/* levels */}
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <CircleGauge className="inline w-4 h-4 mr-1" />
                 Level
               </label>
-              <select
-                value={selectedLevel}
-                onChange={(e) => setSelectedLevel(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent bg-white"
-              >
-                <option value="all">All Levels</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
+
+              <Listbox value={selectedLevel} onChange={setSelectedLevel}>
+                <div className="relative">
+                  <Listbox.Button className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent bg-white text-left flex items-center justify-between">
+                    <span>
+                      {selectedLevel === "all"
+                        ? "All Levels"
+                        : selectedLevel.charAt(0).toUpperCase() +
+                          selectedLevel.slice(1)}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </Listbox.Button>
+
+                  <Listbox.Options className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                    {["all", "beginner", "intermediate", "advanced"].map(
+                      (level) => (
+                        <Listbox.Option
+                          key={level}
+                          value={level}
+                          className={({ active, selected }) =>
+                            `cursor-pointer select-none relative py-2.5 px-4 ${
+                              active
+                                ? "bg-[#243E36FF]/10 text-[#243E36FF]"
+                                : "text-gray-900"
+                            } ${
+                              selected ? "font-semibold bg-[#243E36FF]/5" : ""
+                            }`
+                          }
+                        >
+                          <span className="block truncate">
+                            {level === "all"
+                              ? "All Levels"
+                              : level.charAt(0).toUpperCase() + level.slice(1)}
+                          </span>
+                        </Listbox.Option>
+                      )
+                    )}
+                  </Listbox.Options>
+                </div>
+              </Listbox>
             </div>
 
-            <div className="flex-1 ">
+            {/* sorty */}
+            <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <ArrowUpNarrowWide className="inline w-4 h-4 mr-1" />
                 Sort By
               </label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent bg-white"
-              >
-                <option value="featured">Newest</option>
-                <option value="level">Levels</option>
-                <option value="duration">Shortest Duration</option>
-              </select>
+
+              <Listbox value={sortBy} onChange={setSortBy}>
+                <div className="relative">
+                  <Listbox.Button className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF] focus:border-transparent bg-white text-left flex items-center justify-between">
+                    <span>
+                      {sortBy === "featured"
+                        ? "Newest"
+                        : sortBy === "level"
+                        ? "Levels"
+                        : "Shortest Duration"}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </Listbox.Button>
+
+                  <Listbox.Options className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none">
+                    {[
+                      { value: "featured", label: "Newest" },
+                      { value: "level", label: "Levels" },
+                      { value: "duration", label: "Shortest Duration" },
+                    ].map((option) => (
+                      <Listbox.Option
+                        key={option.value}
+                        value={option.value}
+                        className={({ active, selected }) =>
+                          `cursor-pointer select-none relative py-2.5 px-4 ${
+                            active
+                              ? "bg-[#243E36FF]/10 text-[#243E36FF]"
+                              : "text-gray-900"
+                          } ${selected ? "font-semibold bg-[#243E36FF]/5" : ""}`
+                        }
+                      >
+                        <span className="block truncate">{option.label}</span>
+                      </Listbox.Option>
+                    ))}
+                  </Listbox.Options>
+                </div>
+              </Listbox>
             </div>
           </div>
         </div>
