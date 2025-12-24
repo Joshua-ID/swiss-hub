@@ -18,6 +18,7 @@ import { LessonView } from "./pages/LessonView";
 import { Home } from "./pages/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { CourseCatalog } from "./pages/CourseCatalog";
+import { WaitlistPage } from "./pages/WaitlistPage";
 
 function App() {
   return (
@@ -26,6 +27,9 @@ function App() {
         <Navbar />
         <main className="grow">
           <Routes>
+            {/* Public route - Waitlist page */}
+            <Route path="/join-wishlist" element={<WaitlistPage />} />
+
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
 

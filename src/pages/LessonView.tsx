@@ -132,7 +132,7 @@ export const LessonView = () => {
   if (localLoading || (currentUser && !enrollmentsLoaded)) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner />
       </div>
     );
   }

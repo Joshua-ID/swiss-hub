@@ -110,9 +110,7 @@ export const Navbar = () => {
 
         {/* User Authentication */}
         <div className="flex items-center gap-3 pl-2 md:pl-3 border-l border-gray-200">
-          {!isLoaded ? (
-            <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
-          ) : user ? (
+          {user ? (
             <>
               <div className="text-right hidden md:block">
                 <p className="text-sm font-medium text-gray-900">
@@ -123,7 +121,6 @@ export const Navbar = () => {
                 </p>
               </div>
               <UserButton
-                afterSignOutUrl="/"
                 appearance={{
                   elements: {
                     avatarBox: "w-10 h-10",
@@ -134,11 +131,20 @@ export const Navbar = () => {
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <SignInButton mode="modal">
-                <button className="text-[#243E36FF] hover:text-[#243E36FF]/80 text-sm font-medium transition-colors">
-                  Sign In
-                </button>
-              </SignInButton>
+              {import.meta.env.PROD ? (
+                <SignInButton mode="modal">
+                  <button className="text-[#243E36FF] hover:text-[#243E36FF]/80 text-sm font-medium transition-colors">
+                    Sign In
+                  </button>
+                </SignInButton>
+              ) : (
+                <Link
+                  to="/join-wishlist"
+                  className="text-[#243E36FF] hover:text-[#243E36FF]/80 text-sm font-medium transition-colors"
+                >
+                  Join Waitlist
+                </Link>
+              )}
             </div>
           )}
         </div>
