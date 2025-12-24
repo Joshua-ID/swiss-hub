@@ -96,6 +96,10 @@ export const CourseDetail = () => {
   }, [allProgress, lessons, currentUser, courseId]);
 
   const handleEnroll = async () => {
+    if (!import.meta.env.PROD) {
+      navigate("/join-waitlist?redirect=/catalog");
+      return;
+    }
     if (!currentUser || !courseId) {
       openSignIn({
         redirectUrl: `/course/${courseId}`,
