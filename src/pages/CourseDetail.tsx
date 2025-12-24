@@ -96,7 +96,7 @@ export const CourseDetail = () => {
   }, [allProgress, lessons, currentUser, courseId]);
 
   const handleEnroll = async () => {
-    if (!import.meta.env.PROD) {
+    if (import.meta.env.PROD) {
       navigate("/join-waitlist?redirect=/catalog");
       return;
     }
