@@ -131,7 +131,7 @@ export const Navbar = () => {
             </>
           ) : (
             <div className="flex items-center gap-2">
-              {import.meta.env.PROD ? (
+              {!import.meta.env.PROD ? (
                 <SignInButton mode="modal">
                   <button className="text-[#243E36FF] hover:text-[#243E36FF]/80 text-sm font-medium transition-colors">
                     Sign In
