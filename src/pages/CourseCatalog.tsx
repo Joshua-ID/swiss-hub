@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Search,
   Filter,
@@ -9,6 +9,7 @@ import {
   ReplaceAll,
   ClipboardCopy,
   ChevronDown,
+  RefreshCw,
 } from "lucide-react";
 import { useStore } from "../store/useStore";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +31,7 @@ export const CourseCatalog = () => {
     isUserEnrolled,
     ensureEnrollmentsLoaded,
     enrollmentsLoaded,
+    invalidateCache,
   } = useStore();
 
   const { openSignIn } = useClerk();
@@ -38,36 +40,54 @@ export const CourseCatalog = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("featured");
-  const [localLoading, setLocalLoading] = useState(true);
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const categories = [
-    "all",
-    ...Array.from(new Set(courses.map((c) => c.category).filter(Boolean))),
-  ];
+  // Memoize categories to prevent recalculation
+  const categories = useMemo(
+    () => [
+      "all",
+      ...Array.from(new Set(courses.map((c) => c.category).filter(Boolean))),
+    ],
+    [courses]
+  );
 
-  // Fetch courses and enrollments on mount
+  // Load data only once on mount
   useEffect(() => {
     const loadData = async () => {
-      setLocalLoading(true);
       try {
-        // Fetch courses
-        await fetchCourses();
+        // These will use cache if available
+        await fetchCourses(); // Will use cache if valid
 
         if (currentUser) {
-          await ensureEnrollmentsLoaded();
+          await ensureEnrollmentsLoaded(); // Will use cache if valid
         }
       } catch (error) {
         console.error("Error loading data:", error);
-      } finally {
-        setLocalLoading(false);
       }
     };
 
     loadData();
-  }, [fetchCourses, ensureEnrollmentsLoaded, currentUser]);
+  }, []); // Empty deps - only run once on mount
 
-  useEffect(() => {
+  // Manual refresh function
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      invalidateCache("all"); // Clear all caches
+      await fetchCourses(true); // Force fresh fetch
+
+      if (currentUser) {
+        await ensureEnrollmentsLoaded(true); // Force fresh fetch
+      }
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [currentUser, fetchCourses, ensureEnrollmentsLoaded, invalidateCache]);
+
+  // Memoize filtered courses to prevent unnecessary recalculations
+  const filteredCourses = useMemo(() => {
     let result = [...courses];
 
     // Apply search filter
@@ -119,7 +139,7 @@ export const CourseCatalog = () => {
         );
     }
 
-    setFilteredCourses(result);
+    return result;
   }, [courses, searchTerm, selectedCategory, selectedLevel, sortBy]);
 
   const handleEnroll = async (courseId: string) => {
@@ -141,41 +161,52 @@ export const CourseCatalog = () => {
   };
 
   // Check if course is locked (prerequisites not met)
-  const isCourseLocked = (course: Course): boolean => {
-    if (
-      !currentUser ||
-      !course.prerequisites ||
-      course.prerequisites.length === 0
-    )
-      return false;
+  const isCourseLocked = useCallback(
+    (course: Course): boolean => {
+      if (
+        !currentUser ||
+        !course.prerequisites ||
+        course.prerequisites.length === 0
+      )
+        return false;
 
-    // Check if all prerequisites are met
-    const userEnrollments = enrollments.filter(
-      (e) => e.userId === currentUser.id
-    );
-    const completedCourseIds = userEnrollments
-      .filter((e) => e.status === "completed")
-      .map((e) => e.courseId);
+      // Check if all prerequisites are met
+      const userEnrollments = enrollments.filter(
+        (e) => e.userId === currentUser.id
+      );
+      const completedCourseIds = userEnrollments
+        .filter((e) => e.status === "completed")
+        .map((e) => e.courseId);
 
-    // Check if all prerequisites are completed
-    return !course.prerequisites.every((prereqId) =>
-      completedCourseIds.includes(prereqId)
-    );
-  };
+      // Check if all prerequisites are completed
+      return !course.prerequisites.every((prereqId) =>
+        completedCourseIds.includes(prereqId)
+      );
+    },
+    [currentUser, enrollments]
+  );
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setSearchTerm("");
     setSelectedCategory("all");
     setSelectedLevel("all");
     setSortBy("featured");
-  };
+  }, []);
 
-  const handleCourseClick = (courseId: string) => {
-    navigate(`/course/${courseId}`);
-  };
+  const handleCourseClick = useCallback(
+    (courseId: string) => {
+      navigate(`/course/${courseId}`);
+    },
+    [navigate]
+  );
 
-  // Show loading while courses OR enrollments are loading
-  if (isLoading || localLoading || (currentUser && !enrollmentsLoaded)) {
+  // Only show loading on initial mount when there's no data
+  const showInitialLoading = isLoading && courses.length === 0;
+
+  if (
+    showInitialLoading ||
+    (currentUser && !enrollmentsLoaded && enrollments.length === 0)
+  ) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <LoadingSpinner />
@@ -195,6 +226,20 @@ export const CourseCatalog = () => {
               skills
             </p>
           </div>
+
+          {/* Refresh Button */}
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-[#243E36FF] text-white rounded-lg hover:bg-[#243E36FF]/85 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            <RefreshCw
+              className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            <span className="text-sm font-medium">
+              {isRefreshing ? "Refreshing..." : "Refresh"}
+            </span>
+          </button>
         </div>
 
         {/* Stats */}
