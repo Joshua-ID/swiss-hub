@@ -66,7 +66,7 @@ export const Navbar = () => {
           <>
             {/* Admin Links */}
             {isAdmin && (
-              <div>
+              <div className="flex flex-col items-end sm:flex-row">
                 <Link
                   to="/admin"
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${

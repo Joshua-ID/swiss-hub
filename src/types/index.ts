@@ -15,7 +15,7 @@ export interface Course {
   prerequisites: string[];
   duration: number;
   level: "beginner" | "intermediate" | "advanced";
-  createdBy: string;
+  createdBy?: string;
   createdAt?: string;
   updatedAt?: string;
 
@@ -38,6 +38,7 @@ export interface Lesson {
   materials: Material[];
   duration: number; // in minutes
   type: "video" | "reading" | "quiz";
+  updatedAt?: string;
 }
 
 export interface Material {
@@ -45,7 +46,7 @@ export interface Material {
   title: string;
   type: "pdf" | "document" | "slide" | "link";
   url: string;
-  size?: string; // e.g., "2.5 MB"
+  size?: string; // in MB
 }
 
 export interface Progress {
