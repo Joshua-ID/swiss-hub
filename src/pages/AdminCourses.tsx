@@ -44,42 +44,40 @@ export const AdminCourses = () => {
 
   return (
     <>
-      <div>
+      <div className="max-w-[1700px] mx-auto p-3 md:p-4">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex  justify-between items-start sm:items-center gap-5 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="sm:text-4xl text-2xl  font-bold ">
               Course Management
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 sm:text-lg text-xs">
               Create and manage course content
             </p>
           </div>
           <button
             onClick={handleAddCourse}
-            className="flex items-center gap-2 bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-md"
+            className="flex items-center gap-2 bg-[#243E36FF] hover:bg-[#243E36FF]/85 text-white font-semibold px-3 py-3 md:rounded-lg rounded-full transition-colors shadow-md"
           >
             <Plus className="w-5 h-5" />
-            Add New Course
+            <span className="hidden md:flex">Add New Course</span>
           </button>
         </div>
 
         {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search courses by title or category..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF]/75 focus:border-transparent"
-            />
-          </div>
+        <div className="relative mb-4 max-w-5xl w-full mx-auto ">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search courses by title or category..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243E36FF]/75 focus:border-transparent"
+          />
         </div>
 
         {/* Courses Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6 gap-x-2 gap-y-5">
           {filteredCourses.map((course) => {
             const lessonCount = getLessonsByCourse(course.id).length;
             return (
@@ -160,11 +158,8 @@ export const AdminCourses = () => {
         </div>
 
         {filteredCourses.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No courses found</p>
-            <p className="text-gray-400 text-sm mt-2">
-              Try adjusting your search or add a new course
-            </p>
+          <div className="text-gray-500 text-center py-12 text-lg">
+            No courses found
           </div>
         )}
       </div>

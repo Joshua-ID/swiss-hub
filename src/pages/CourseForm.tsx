@@ -255,6 +255,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose }) => {
       }
 
       onClose();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Full error from Supabase:", error);
       alert(
